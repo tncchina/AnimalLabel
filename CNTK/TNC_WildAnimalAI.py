@@ -22,8 +22,9 @@ if 'TEST_DEVICE' in os.environ:
     else:
         C.device.try_set_default_device(C.device.gpu(0))
 
-data_path = os.path.join('C:\TNC_CNTK\data')
-
+import os
+cwd = os.getcwd()
+data_path = os.path.join(os.getcwd(),"data")
 print("data_path: ", data_path)
 
 # model dimensions
@@ -33,7 +34,6 @@ num_channels = 3
 num_classes = 10
 
 import cntk.io.transforms as xforms
-
 
 #
 # Define the reader for both training and evaluation action.
@@ -132,7 +132,7 @@ def train_and_evaluate(reader_train, reader_test, max_epochs, model_func):
 
     print(datetime.datetime.now())
     # training config
-    #epoch_size = 50000
+    #epoch_size =    50000
     #minibatch_size = 64
     epoch_size = 10
     minibatch_size = 1
@@ -171,7 +171,7 @@ def train_and_evaluate(reader_train, reader_test, max_epochs, model_func):
         label_var: reader_train.streams.labels
     }
 
-    C.logging.log_number_of_parameters(z);
+    C.logging.log_number_of_parameters(z)
     print()
 
     # perform model training
@@ -272,5 +272,3 @@ pred = train_and_evaluate(reader_train,
                           reader_test,
                           max_epochs=2,
                           model_func=create_basic_model)
-
-
