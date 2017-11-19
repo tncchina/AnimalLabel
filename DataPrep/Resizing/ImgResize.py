@@ -63,11 +63,11 @@ def resize():
 
     for img_file_name in jpg_file_list:
         # Load an color image in grayscale
+        print("Loading original image file -", img_file_name)
         img = cv2.imread(img_file_name)
         re_img = cv2.resize(img, (width, height))
         #save
         resized_name = os.path.join(target, os.path.basename(img_file_name))
-        print("Target path: ", target)
         print("Saving resized image as ", resized_name)
         cv2.imwrite(resized_name, re_img)
     print("Done")
@@ -75,13 +75,12 @@ def resize():
 
 
 def browse_path(btn_name):
-    print("btn_name = ", btn_name)
     dlg_title = ""
-    initdir = ""
+    init_dir = os.getcwd()
     if btn_name == "BrowseSource":
         dlg_title = "Select source folder"
         init_dir = source_path.get()
-    else:
+    elif btn_name =="BrowseDestination":
         dlg_title = "Select destination folder"
         init_dir = dest_path.get()
     filename = filedialog.askdirectory(parent=main_frame, title=dlg_title, initialdir=init_dir)
@@ -89,7 +88,7 @@ def browse_path(btn_name):
         filename=filename.replace('/', '\\')
         if btn_name == "BrowseSource":
             source_path.set(filename)
-        else:
+        elif btn_name == "BrowseDestination":
             dest_path.set(filename)
     return
 
