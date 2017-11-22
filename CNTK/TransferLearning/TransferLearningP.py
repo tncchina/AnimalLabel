@@ -41,7 +41,7 @@ label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 5
+max_epochs = 200
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
@@ -49,6 +49,7 @@ l2_reg_weight = 0.0005
 
 # define base model location and characteristics
 _base_model_file = os.path.join(base_folder, "PretrainedModels", "ResNet18_ImageNet_CNTK.model")
+#_base_model_file = os.path.join(base_folder, "PretrainedModels", "VGG16_ImageNet_Caffe.model")
 _feature_node_name = "features"
 _last_hidden_node_name = "z.x"
 _image_height = 682
@@ -135,8 +136,8 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
             data = minibatch_source.next_minibatch(min(mb_size, epoch_size-sample_count), input_map=input_map)
             trainer.train_minibatch(data)                                    # update model with it
             sample_count += trainer.previous_minibatch_sample_count          # count samples processed so far
-            if sample_count % (100 * mb_size) == 0:
-                print ("Processed {0} samples".format(sample_count))
+            #if sample_count % (100 * mb_size) == 0:
+            #    print ("Processed {0} samples".format(sample_count))
             # For visualization...
             #print("type of plot_data:", type(plot_data), type(plot_data['batchindex']), type(plot_data['loss']),type(plot_data['error']))
             plot_data['batchindex'].append(batch_index)
