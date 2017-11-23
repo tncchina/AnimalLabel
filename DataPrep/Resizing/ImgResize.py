@@ -18,7 +18,7 @@ TARGET_WIDTH = 682
 TARGET_HEIGHT = 512
 
 root = Tk()
-APP_TITLE = "ImgResize v1.0"
+APP_TITLE = "ImgResize v1.2"
 
 main_frame = None
 
@@ -28,11 +28,32 @@ dest_path = StringVar()
 pix_width = StringVar()
 pix_height = StringVar()
 
-def resize():
+include_sub_folder = IntVar()
 
+
+def _resize_jpg(source_path, destin_path, width, height):
+    jpg_file_list = glob.glob(os.path.join(source_path,"*.jpg"))
+
+    if not os.path.exists(destin_path):
+        print("Creating the target path:", destin_path)
+        os.mkdir(destin_path)
+
+    for img_file_name in jpg_file_list:
+        # Load an color image
+        print("Loading original image file -", img_file_name)
+        img = cv2.imread(img_file_name)
+        re_img = cv2.resize(img, (width, height))
+        # save
+        resized_name = os.path.join(destin_path, os.path.basename(img_file_name))
+        print("Saving resized image as ", resized_name)
+        cv2.imwrite(resized_name, re_img)
+    print("Done")
+    return
+
+
+def resize():
     source = source_path.get()
     target = dest_path.get()
-
     width = TARGET_WIDTH
     height = TARGET_HEIGHT
     try:
@@ -43,34 +64,30 @@ def resize():
         return
 
     # Select all img file
-    print("Target Folder: ",target)
     if not os.path.exists(source):
         print("Couldn't find source path:", source)
         messagebox.showwarning("File not found", "File doesn't exist.")
         return
 
     if source == target:
-        aswr = messagebox.askyesno("Warning","Source path and target path are the same, original file(s) will be "
+        answer = messagebox.askyesno("Warning","Source path and target path are the same, original file(s) will be "
                                              "overwritten, do you still want to continue?" )
-        if aswr != True:
+        if answer != True:
             return
 
-    jpg_file_list = glob.glob(os.path.join(source,"*.jpg"))
-
     if not os.path.exists(target):
-        print("Creating the target path:", target)
         os.mkdir(target)
 
-    for img_file_name in jpg_file_list:
-        # Load an color image in grayscale
-        print("Loading original image file -", img_file_name)
-        img = cv2.imread(img_file_name)
-        re_img = cv2.resize(img, (width, height))
-        #save
-        resized_name = os.path.join(target, os.path.basename(img_file_name))
-        print("Saving resized image as ", resized_name)
-        cv2.imwrite(resized_name, re_img)
-    print("Done")
+    # Recursive
+    if include_sub_folder.get():
+        len_source_path = len(source)
+        for root, dirs, files in os.walk(source):
+            for sub_dir in dirs:
+                sub_source = os.path.join(root, sub_dir)
+                sub_target = target + sub_source[len_source_path:]
+                _resize_jpg(sub_source, sub_target, width, height)
+    else:
+        _resize_jpg(source,target, width, height)
     return
 
 
@@ -121,7 +138,7 @@ def main():
     # Option frame
     opt_lf = LabelFrame(main_frame, text="Options")
     opt_lf.pack(side=TOP, padx=5, pady=5, fill=X)
-    #Label(opt_lf, text="Option function such as recursive directory, are under construction...").grid(row=2, column=0, columnspan=3)
+
     Label(opt_lf, text="Width=").grid(row=0, column=0, sticky=E, padx=2, pady=2)
     width_entry = Entry(opt_lf, textvariable=pix_width, width=10)
     width_entry.grid(row=0, column=1, sticky=W, padx=2, pady=2)
@@ -133,7 +150,11 @@ def main():
     pix_height.set(TARGET_HEIGHT)
     Label(opt_lf, text="pix").grid(row=1, column=2, sticky=W)
 
-    # Commmand frame
+    chk_sub_folder = Checkbutton(opt_lf, text="Including Sub-folders", variable=include_sub_folder)
+    chk_sub_folder.grid(row=2, column=0, columnspan=3, padx=2, pady=2)
+    include_sub_folder.set(1)
+
+    # Command frame
     cmd_frame = Frame(main_frame)
     cmd_frame.pack(side=TOP, padx=5, pady=5, fill=X)
 
