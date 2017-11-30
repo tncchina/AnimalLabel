@@ -18,8 +18,6 @@ import glob
 root = Tk()
 APP_TITLE = "SplitDataFile v1.0"
 
-def load_file(data_file):
-    return
 
 def Split(origin_data_file):
     output_file = ""
@@ -45,8 +43,28 @@ def Split(origin_data_file):
             del read_buffer[random_line]
             total_lines -= 1
 
-
+main_frame = Frame(root)
 source_file = StringVar()
+first_line = StringVar()
+
+def show_opt_window():
+    top = Toplevel()
+    top.group(window=main_frame.master)
+    top.title("Data file: ", source_file.get())
+
+    opt_frame = Frame(top)
+    opt_frame.pack(padx=5, pady=5)
+    Label(opt_frame, text="First line in data file:").pack(side=TOP, sticky=W, padx=2, pady=2)
+    firstline_entry = Entry(top, textvariable=first_line)
+    firstline_entry.pack(sid=TOP, sticky=W, padx=2, pady=2)
+
+
+    opt_lf = LabelFrame(top, text="Label Column")
+    opt_lf.pack(side=TOP, padx=5, pady=5)
+
+
+    return
+
 
 def browse_path():
     pathfilename = source_file.get()
@@ -61,9 +79,27 @@ def browse_path():
         source_file.set(answer)
     return
 
+def load_file():
+    fullpathfilename = source_file.get()
+    if not os.path.exists(fullpathfilename):
+        print("Error: file not found-", fullpathfilename)
+        return
+
+    datapath, datafile = os.path.split(fullpathfilename)
+    print("Path:", datapath)
+    print("File:", datafile)
+    root.withdraw()
+
+    show_opt_window()
+
+    return
+
+
+def exit_app():
+    exit(0)
+    return
 
 def main():
-    main_frame = Frame(root)
     main_frame.master.title(APP_TITLE)
     main_frame.pack()
 
@@ -75,6 +111,12 @@ def main():
 
     btn_browse_source = Button(path_lf, text="Browse ...", command=browse_path)
     btn_browse_source.grid(row=0, column=2, sticky=W, padx=2, pady=2)
+    
+    btn_load_file = Button(path_lf, text="Load", command=load_file)
+    btn_load_file.grid(row=1, column=0, sticky=W, padx=2, pady=2)
+    
+    btn_exit= Button(path_lf, text="Exit", command=exit_app)
+    btn_exit.grid(row=1, column=2, sticky=W, padx=2, pady=2)
 
     root.mainloop()
     return
