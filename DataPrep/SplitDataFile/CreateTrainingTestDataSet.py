@@ -12,7 +12,7 @@ Maximum_Data_Per_Class = -1
 Random_Training_Data_Order = True
 Random_Test_Data_Order = True
 
-Raw_Data_File = "TNC2_FileName_ID.csv"
+Raw_Data_File = "TNC2_FileName_ID_NoEmpty.csv"
 
 # ******************** End of parameters ******************************
 
@@ -49,20 +49,19 @@ name_id_df = pd.read_csv(Raw_Data_PathFileName)
 print(name_id_df.dtypes)
 
 print("Checking images files...")
+missing_cnt = 0
 for f in name_id_df['FilePathName']:
-    missing_cnt = 0
     if not os.path.exists(f):
         print(f)
-        missing_cnt +=1
-    if missing_cnt > 0:
-        print("Error, above ", str(missing_cnt), " file(s) are missing.")
-        exit(-1)
+        missing_cnt+=1
+if missing_cnt > 0:
+    print("Error, above ", str(missing_cnt), " file(s) are missing.")
+    exit(-1)
 
 # Reading the data
 classlist = name_id_df['Class_ID'].unique()
 classlist.sort()
 
-print(classlist)
 min_classid = min(classlist)
 max_classid = max(classlist)
 print("Min Class ID: ", min(classlist))
