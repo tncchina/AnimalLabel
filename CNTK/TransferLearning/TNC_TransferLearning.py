@@ -26,7 +26,7 @@ from cntk.logging import log_number_of_parameters, ProgressPrinter
 import matplotlib.pyplot as plt
 import math
 import sys
-#import csv
+import datetime
 
 
 ################################################
@@ -35,28 +35,38 @@ import sys
 make_mode = False
 freeze_weights = False
 base_folder = os.path.dirname(os.path.abspath(__file__))
-tl_model_file = os.path.join(base_folder, "Output", "TransferLearning.model")
-output_file = os.path.join(base_folder, "Output", "predOutput.txt")
-output_file_confusion_matrix = os.path.join(base_folder, "Output", "ConfusionMatrix.txt")
+output_folder = os.path.join(base_folder, "Output_" + datetime.datetime.now().strftime("%Y%m%d%H%M"))
+if not os.path.exists(output_folder):     # create Output folder to store our output files.
+    os.makedirs(output_folder)
+output_file = os.path.join(output_folder, "PredictionsOutput.txt")
+output_file_confusion_matrix = os.path.join(output_folder, "ConfusionMatrix.txt")
+output_figure_loss = os.path.join(output_folder, "Training_Loss.png")
+output_figure_error = os.path.join(output_folder, "Prediction_Error.png")
+
+
 features_stream_name = 'features'
 label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 200
+max_epochs = 50
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
 l2_reg_weight = 0.0005
 
 # define base model location and characteristics
-_base_model_file = os.path.join(base_folder, "PretrainedModels", "ResNet18_ImageNet_CNTK.model")
-#_base_model_file = os.path.join(base_folder, "PretrainedModels", "VGG16_ImageNet_Caffe.model")
+_base_model_name_ = "ResNet18_ImageNet_CNTK.model"
+#_base_model_name_ = "VGG16_ImageNet_Caffe.model"
+_base_model_file = os.path.join(base_folder, "PretrainedModels", _base_model_name_)
 _feature_node_name = "features"
 _last_hidden_node_name = "z.x"
 _image_height = 682
 _image_width = 512
 _num_channels = 3
+
+# define the file name we will save our trained model to.  It is "TNC_" + _base_model_name
+tl_model_file = os.path.join(output_folder, "TNC_" + _base_model_name_)
 
 # define data location and characteristics
 _data_folder = os.path.join(base_folder, "DataSets")
@@ -158,19 +168,22 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     plot_data['avg_loss'] = (loss_cumsum[window_width:] - loss_cumsum[:-window_width]) / window_width
     plot_data['avg_error'] = (error_cumsum[window_width:] - error_cumsum[:-window_width]) / window_width
     plt.figure(1)
-    plt.subplot(211)
+    #plt.subplot(211)
     plt.plot(plot_data["batchindex"], plot_data["avg_loss"], 'b--')
     plt.xlabel('Minibatch number')
     plt.ylabel('Loss')
     plt.title('Minibatch run vs. Training loss ')
-    plt.show()
+    #plt.show()
+    plt.savefig(output_figure_loss, bbox_inches='tight' )
 
-    plt.subplot(212)
+    plt.figure(2)
+    #plt.subplot(212)
     plt.plot(plot_data["batchindex"], plot_data["avg_error"], 'r--')
     plt.xlabel('Minibatch number')
     plt.ylabel('Label Prediction Error')
     plt.title('Minibatch run vs. Label Prediction Error ')
-    plt.show()
+    #plt.show()
+    plt.savefig(output_figure_error, bbox_inches='tight')
 
     return tl_model
 
