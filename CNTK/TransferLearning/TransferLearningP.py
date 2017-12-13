@@ -26,6 +26,7 @@ from cntk.logging import log_number_of_parameters, ProgressPrinter
 import matplotlib.pyplot as plt
 import math
 import sys
+#import csv
 
 
 ################################################
@@ -36,12 +37,13 @@ freeze_weights = False
 base_folder = os.path.dirname(os.path.abspath(__file__))
 tl_model_file = os.path.join(base_folder, "Output", "TransferLearning.model")
 output_file = os.path.join(base_folder, "Output", "predOutput.txt")
+output_file_confusion_matrix = os.path.join(base_folder, "Output", "ConfusionMatrix.txt")
 features_stream_name = 'features'
 label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 200
+max_epochs = 100
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
@@ -210,7 +212,8 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
     pred_count = 0
     correct_count = 0
     np.seterr(over='raise')
-    with open(output_file, 'wb') as results_file:
+
+    with open(output_file, 'wb') as results_file, open(output_file_confusion_matrix, 'w') as confusion_matrix_file:
         with open(test_map_file, "r") as input_file:
             for line in input_file:
                 tokens = line.rstrip().split('\t')
@@ -224,6 +227,11 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                     correct_count += 1
 
                 np.savetxt(results_file, probs[np.newaxis], fmt="%.3f")
+                #np.savetxt(confusion_matrix_file, (true_label, predicted_label, np.amax(probs)), fmt="%d %d %.3f", delimiter=',', newline='\n')
+                #np.savetxt(confusion_matrix_file, (true_label, predicted_label), fmt="%d %d",  delimiter=',', newline='\n')
+                #csv_writer.writerow([true_label, predicted_label])
+                confusion_matrix_file.write("%d,%d,%0.3f\n" % (true_label, predicted_label, np.amax(probs)))
+
                 if pred_count % 100 == 0:
                     print("Processed {0} samples ({1} correct)".format(pred_count, (float(correct_count) / pred_count)))
                 if pred_count >= num_images:
