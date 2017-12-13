@@ -43,7 +43,7 @@ label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 100
+max_epochs = 200
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
@@ -230,7 +230,7 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label, np.amax(probs)), fmt="%d %d %.3f", delimiter=',', newline='\n')
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label), fmt="%d %d",  delimiter=',', newline='\n')
                 #csv_writer.writerow([true_label, predicted_label])
-                confusion_matrix_file.write("%d,%d,%0.3f\n" % (true_label, predicted_label, np.amax(probs)))
+                confusion_matrix_file.write("%s,%d,%d,%0.3f\n" % (os.path.basename(img_file), true_label, predicted_label, np.amax(probs)))
 
                 if pred_count % 100 == 0:
                     print("Processed {0} samples ({1} correct)".format(pred_count, (float(correct_count) / pred_count)))
