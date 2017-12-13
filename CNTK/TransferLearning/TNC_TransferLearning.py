@@ -49,24 +49,30 @@ label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 50
+max_epochs = 200
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
 l2_reg_weight = 0.0005
 
 # define base model location and characteristics
-_base_model_name_ = "ResNet18_ImageNet_CNTK.model"
-#_base_model_name_ = "VGG16_ImageNet_Caffe.model"
-_base_model_file = os.path.join(base_folder, "PretrainedModels", _base_model_name_)
+_base_model_name = "ResNet18_ImageNet_CNTK.model"
+#_base_model_name = "VGG16_ImageNet_Caffe.model"
+_base_model_file = os.path.join(base_folder, "PretrainedModels", _base_model_name)
 _feature_node_name = "features"
 _last_hidden_node_name = "z.x"
 _image_height = 682
 _image_width = 512
 _num_channels = 3
 
+# write the base model name to Output\BaseModelName.txt
+_base_model_ID_file_name = os.path.join(output_folder, "BaseModelName.txt")
+with open(_base_model_ID_file_name, 'w') as base_model_id_file:
+    base_model_id_file.write(_base_model_name)
+
+
 # define the file name we will save our trained model to.  It is "TNC_" + _base_model_name
-tl_model_file = os.path.join(output_folder, "TNC_" + _base_model_name_)
+tl_model_file = os.path.join(output_folder, "TNC_" + _base_model_name)
 
 # define data location and characteristics
 _data_folder = os.path.join(base_folder, "DataSets")
