@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TNCAnimalLabelWebAPI", "TNCAnimalLabelWebAPI\TNCAnimalLabelWebAPI.csproj", "{2B7D7FFE-EC2B-4D20-8EB8-56FBDDF9EBE3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B7D7FFE-EC2B-4D20-8EB8-56FBDDF9EBE3}.Debug|x64.ActiveCfg = Debug|x64
+		{2B7D7FFE-EC2B-4D20-8EB8-56FBDDF9EBE3}.Debug|x64.Build.0 = Debug|x64
+		{2B7D7FFE-EC2B-4D20-8EB8-56FBDDF9EBE3}.Release|x64.ActiveCfg = Release|x64
+		{2B7D7FFE-EC2B-4D20-8EB8-56FBDDF9EBE3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {69A1B594-4BAC-40D7-9DB9-E20FD9060DE2}
+	EndGlobalSection
+EndGlobal
