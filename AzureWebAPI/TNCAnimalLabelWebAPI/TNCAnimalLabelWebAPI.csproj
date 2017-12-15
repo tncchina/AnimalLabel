@@ -86,6 +86,7 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivationFunctions.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="CNTKImageProcessing.cs" />

@@ -123,12 +123,14 @@ namespace TNCAnimalLabelWebAPI.Controllers
                 var outputVal = outputDataMap[outputVar];
                 var outputData = outputVal.GetDenseData<float>(outputVar);
 
+                float[] softmax_vals = ActivationFunctions.Softmax(outputData[0]);
                 List<string> o = new List<string>();
 
                 // Get results from index 0 in output data since our batch consists of only one image
-                foreach (float f in outputData[0])
+                //foreach (float f in outputData[0])
+                foreach (float f in softmax_vals)
                 {
-                    o.Add(f.ToString());
+                    o.Add( Math.Round(f, 5).ToString());
                 }
 
                 return o.ToArray<string>();
