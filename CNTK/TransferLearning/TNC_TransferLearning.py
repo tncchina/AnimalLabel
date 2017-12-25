@@ -39,7 +39,7 @@ output_folder = os.path.join(base_folder, "Output_" + datetime.datetime.now().st
 if not os.path.exists(output_folder):     # create Output folder to store our output files.
     os.makedirs(output_folder)
 output_file = os.path.join(output_folder, "PredictionsOutput.txt")
-output_file_confusion_matrix = os.path.join(output_folder, "ConfusionMatrix.txt")
+output_file_test_predict = os.path.join(output_folder, "Test_Prediction.txt")
 output_figure_loss = os.path.join(output_folder, "Training_Loss.png")
 output_figure_error = os.path.join(output_folder, "Prediction_Error.png")
 
@@ -65,20 +65,52 @@ _image_height = 682
 _image_width = 512
 _num_channels = 3
 
-# write the base model name to Output\BaseModelName.txt
-_base_model_ID_file_name = os.path.join(output_folder, "BaseModelName.txt")
-with open(_base_model_ID_file_name, 'w') as base_model_id_file:
-    base_model_id_file.write(_base_model_name)
-
-
 # define the file name we will save our trained model to.  It is "TNC_" + _base_model_name
 tl_model_file = os.path.join(output_folder, "TNC_" + _base_model_name)
 
 # define data location and characteristics
 _data_folder = os.path.join(base_folder, "DataSets")
-_train_map_file = os.path.join(_data_folder, "TNC512_file_class_map_train.txt")
-_test_map_file = os.path.join(_data_folder, "TNC512_file_class_map_test.txt")
-_num_classes = 35
+_train_map_filename = "TNC2_FileName_ID_wo_unknow_FullClass_train_random.txt"
+_test_map_filename = "TNC2_FileName_ID_wo_unknow_FullClass_test_random.txt"
+_train_map_file = os.path.join(_data_folder, "TNC2", _train_map_filename)
+_test_map_file = os.path.join(_data_folder, "TNC2", _test_map_filename)
+
+# get the number of classes from training set
+_num_classes = 0
+with open(_train_map_file, 'r') as train_file:
+    for line in train_file:
+        file_class_id = line.split('\t')
+        class_id = int(file_class_id[1])
+        if class_id>_num_classes:
+            _num_classes = class_id
+    train_file.close()
+
+_num_classes += 1
+
+# Log basic configuration to Output\Configuration.txt
+_base_model_ID_file_name = os.path.join(output_folder, "Configuration.txt")
+with open(_base_model_ID_file_name, 'w') as base_model_id_file:
+    base_model_id_file.write(_base_model_name)
+    base_model_id_file.write("Feature node name: %s\n" % _feature_node_name)
+    base_model_id_file.write("Last hidden node: %s\n" % _last_hidden_node_name)
+    base_model_id_file.write("Image height  : %d\n" % _image_height)
+    base_model_id_file.write("Image width   : %d\n" % _image_width)
+    base_model_id_file.write("Image channels: %d\n" % _num_channels)
+    base_model_id_file.write("Training set: %s\n" % _train_map_file)
+    base_model_id_file.write("Test set    : %s\n" % _test_map_file)
+    base_model_id_file.write("Number of classes: %d\n" % _num_classes)
+    base_model_id_file.write("Traiing Parameters:\n")
+    base_model_id_file.write("  Max epochs = %d\n" % max_epochs)
+    base_model_id_file.write("  Minibatch size = %d\n" % mb_size)
+    base_model_id_file.write("  Learning rate/mb = %s\n" % str(lr_per_mb))
+    base_model_id_file.write("  Momentum/mb = %f\n" % momentum_per_mb)
+    base_model_id_file.write("  L2 regression weight = %f\n" % l2_reg_weight)
+
+# copy training and testing file to output as backup
+import shutil
+shutil.copyfile(_train_map_file, os.path.join(output_folder, _train_map_filename))
+shutil.copyfile(_test_map_file, os.path.join(output_folder, _test_map_filename))
+
 ################################################
 ################################################
 
@@ -232,7 +264,7 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
     correct_count = 0
     np.seterr(over='raise')
 
-    with open(output_file, 'wb') as results_file, open(output_file_confusion_matrix, 'w') as confusion_matrix_file:
+    with open(output_file, 'wb') as results_file, open(output_file_test_predict, 'w') as test_predict_file:
         with open(test_map_file, "r") as input_file:
             for line in input_file:
                 tokens = line.rstrip().split('\t')
@@ -249,7 +281,7 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label, np.amax(probs)), fmt="%d %d %.3f", delimiter=',', newline='\n')
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label), fmt="%d %d",  delimiter=',', newline='\n')
                 #csv_writer.writerow([true_label, predicted_label])
-                confusion_matrix_file.write("%s,%d,%d,%0.3f\n" % (os.path.basename(img_file), true_label, predicted_label, np.amax(probs)))
+                test_predict_file.write("%s,%d,%d,%0.3f\n" % (os.path.basename(img_file), true_label, predicted_label, np.amax(probs)))
 
                 if pred_count % 100 == 0:
                     print("Processed {0} samples ({1} correct)".format(pred_count, (float(correct_count) / pred_count)))
