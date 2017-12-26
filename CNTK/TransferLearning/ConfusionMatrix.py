@@ -16,6 +16,7 @@ Usage: 1. Used as object
 
 import numpy as np
 
+
 class ConfusionMatrix:
     _min_class_id = 0
     _max_class_id = 0

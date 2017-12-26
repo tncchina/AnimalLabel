@@ -27,8 +27,9 @@ import matplotlib.pyplot as plt
 import math
 import sys
 import datetime
-import ConfusionMatrix
 
+#sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from ConfusionMatrix import ConfusionMatrix
 
 ################################################
 ################################################
@@ -266,7 +267,6 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
     correct_count = 0
     np.seterr(over='raise')
 
-
     cm = ConfusionMatrix()
 
     with open(output_file, 'wb') as results_file, open(output_file_test_predict, 'w') as test_predict_file:
@@ -287,7 +287,7 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label), fmt="%d %d",  delimiter=',', newline='\n')
                 #csv_writer.writerow([true_label, predicted_label])
                 test_predict_file.write("%s,%d,%d,%0.3f\n" % (os.path.basename(img_file), true_label, predicted_label, np.amax(probs)))
-                cm.add_result(true_label, predicted_label)
+                cm.add_result(int(true_label), int(predicted_label))
 
                 if pred_count % 100 == 0:
                     print("Processed {0} samples ({1} correct)".format(pred_count, (float(correct_count) / pred_count)))
