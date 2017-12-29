@@ -44,15 +44,17 @@ output_file = os.path.join(output_folder, "PredictionsOutput.txt")
 output_file_test_predict = os.path.join(output_folder, "Test_Prediction.txt")
 output_figure_loss = os.path.join(output_folder, "Training_Loss.png")
 output_figure_error = os.path.join(output_folder, "Prediction_Error.png")
+
 confusion_matrix_file = os.path.join(output_folder, "ConfustionMatrix.txt")
 
+log_file_name = os.path.join(output_folder, "Logs.txt")
 
 features_stream_name = 'features'
 label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 200
+max_epochs = 1
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
@@ -175,7 +177,8 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     lr_schedule = learning_parameter_schedule(lr_per_mb)
     mm_schedule = momentum_schedule(momentum_per_mb)
     learner = momentum_sgd(tl_model.parameters, lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight)
-    progress_printer = ProgressPrinter(tag='Training', num_epochs=num_epochs)
+    progress_printer = ProgressPrinter(tag='Training', log_to_file=log_file_name, num_epochs=num_epochs)
+    #progress_printer = ProgressPrinter(tag='Training', log_to_file=log_file_name, num_epochs=num_epochs)
     trainer = Trainer(tl_model, (ce, pe), learner, progress_printer)
 
     # Get minibatches of images and perform model training
