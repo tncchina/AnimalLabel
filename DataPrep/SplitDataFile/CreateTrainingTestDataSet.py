@@ -4,35 +4,32 @@ import random
 import math
 
 # ******************** Parameters session ******************************
-Training_Test_Data_Ratio = 0.80
+
+Trainig_Test_Data_Ratio = 0.80
 Minimum_Data_Per_Class = 20
 Maximum_Data_Per_Class = -1
 
 Random_Training_Data_Order = True
 Random_Test_Data_Order = True
 
-Raw_Data_File = "RawDataLabel.csv"
+Raw_Data_File = "TNC2_FileName_ID_NoEmpty.csv"
 
 # ******************** End of parameters ******************************
 
-class RawData:
-    def __init__(self):
-        self.base_folder = os.path.dirname(os.path.abspath(__file__))
-        self.datasets_dir = os.path.join(self.base_folder, "..", "..", "CNTK", "TransferLearning", "DataSets")
-        self.DataFileRoot = os.path.join(self.datasets_dir, "TNC2")
-        print("DataSets Root:", self.datasets_dir)
+DataFileRoot = os.path.join(os.getcwd(), "..", "..", "CNTK", "TransferLearning", "DataSets", "TNC2")
+print("DataFileRoot:", DataFileRoot)
+# create output file names
+Raw_Data_PathFileName = os.path.join(DataFileRoot, Raw_Data_File)
 
-        # create output file names
-        self.Raw_Data_PathFileName = os.path.join(self.DataFileRoot, Raw_Data_File)
-        filename, ext = os.path.splitext(self.Raw_Data_File)
-        CleanUp_Data_File = filename + "_cleanup" + ext
-        self.CleanUp_Data_PathFileName = os.path.join(self.DataFileRoot, CleanUp_Data_File)
+filename, ext = os.path.splitext(Raw_Data_File)
+CleanUp_Data_File = filename + "_cleanup" + ext
+CleanUp_Data_PathFileName = os.path.join(DataFileRoot, CleanUp_Data_File)
 
-        Training_Data_File = filename + "_train.txt"
-        self.Training_Data_PathFileName = os.path.join(self.DataFileRoot, Training_Data_File)
+Training_Data_File = filename + "_train.txt"
+Training_Data_PathFileName = os.path.join(DataFileRoot, Training_Data_File)
 
-        Training_Data_Random_File = filename + "_train_random.txt"
-        self.Training_Data_Random_PathFileName = os.path.join(self.DataFileRoot, Training_Data_Random_File)
+Training_Data_Random_File = filename + "_train_random.txt"
+Training_Data_Random_PathFileName = os.path.join(DataFileRoot, Training_Data_Random_File)
 
 Test_Data_File = filename + "_test.txt"
 Test_Data_PathFileName = os.path.join(DataFileRoot, Test_Data_File)
@@ -137,7 +134,7 @@ for classid in classlist:
     print("======Process Class ID: ", str(classid), "=======")
     df = cleanup_df[cleanup_df['Class_ID'] == classid]
     row = df.shape[0]
-    split_index = math.floor(row * Training_Test_Data_Ratio)
+    split_index = math.floor(row * Trainig_Test_Data_Ratio)
     train_df = pd.concat([train_df, df.iloc[:split_index]], ignore_index=True)
     test_df = pd.concat([test_df, df.iloc[split_index:]], ignore_index=True)
     print("Training:", split_index)
@@ -208,7 +205,7 @@ print("**********************************************")
 with open(Summary_PathFileName, "w") as summary:
     summary.write("Row Data File:\t%s\n" % Raw_Data_File)
     summary.write("Cleaned-up file:\t%s\n" % CleanUp_Data_File)
-    summary.write("Training/Total rate:\t%.3f\n" % Training_Test_Data_Ratio)
+    summary.write("Training/Total rate:\t%.3f\n" % Trainig_Test_Data_Ratio)
     if Random_Training_Data_Order:
         summary.write("Training set file:\t%s\n" % Training_Data_Random_File)
     else:
