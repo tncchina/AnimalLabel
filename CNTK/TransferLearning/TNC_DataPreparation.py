@@ -110,12 +110,21 @@ class TNCDataSet:
 
     def _extract_image_file(self):
         self.img_pack_fullname = os.path.join(self.datasets_dir, IMG_PACKAGE_FILENAME)
-
+        if not os.path.exists(self.img_pack_fullname):
+            print("Couldn't find image package file ", self.img_pack_fullname)
+            print("Please download the file from \\shpeng440\TNC_RawData\TNC512.zip")
+            print(" to ", self.datasets_dir, " folder, and try again.")
         if not zipfile.is_zipfile(self.img_pack_fullname):
             print("Error: ", self.img_pack_fullname, " is not a valid zip file.")
             return False
         zf = zipfile.ZipFile(self.img_pack_fullname, 'r')
-        #zf.extractall(self.img_dir)
+        if os.path.exists(self.img_dir):
+            print("Image folder exist. skip extacting images to ", self.img_dir)
+        else:
+            print("Unpacking image files: ", self.img_pack_fullname)
+            print("Please waite...")
+            zf.extractall(self.img_dir)
+        print("Done!")
         return True
 
     def prepare_image_file(self):
@@ -216,6 +225,7 @@ class TNCDataSet:
 
         if len(self.class_list) != max_class_id - min_class_id + 1:
             print("WARNING: There are ClassID not used")
+        print("Done.")
         return
 
     def _assign_class_id(self):
@@ -278,6 +288,8 @@ class TNCDataSet:
         # Saving the clean up table.
         print("Saving Cleaned-up data to ", self.cleanup_fullname)
         self.cleanup_df.to_csv(self.cleanup_fullname, index=False, encoding='utf-8-sig')
+        print("Done.")
+        return
 
     def create_train_test_data(self):
         print("**********************************************")
@@ -313,6 +325,7 @@ class TNCDataSet:
 
         self.train_df.to_csv(self.training_split_filename, index=False, encoding='utf-8-sig')
         self.test_df.to_csv(self.test_split_filename, index=False, encoding='utf-8-sig')
+        print("Done.")
         return
 
     def _adjust_training_data(self):
@@ -382,7 +395,7 @@ class TNCDataSet:
             df_test = df_test.append({'FileName':f, 'ID':self.test_df.iloc[i]['ClassID']}, ignore_index=True)
         df_test.to_csv(self.test_split_filename, header=False, sep='\t', index=False)
         print("Test data is saved to ", self.test_split_filename)
-
+        print("Done.")
         return
 
     def create_summary(self):
@@ -437,6 +450,8 @@ class TNCDataSet:
 
             summary.flush()
             summary.close()
+            print("Summary is created in ", self.summary_filename)
+            print("Done.")
         return
 
     def create_randomized_date(self):
@@ -488,6 +503,7 @@ class TNCDataSet:
                 o.flush()
                 o.close()
                 print("Test data saved to :", self.test_data_random_fileName)
+        print("Done.")
         return
 
 
