@@ -74,11 +74,12 @@ class TNCDataSet:
         if not os.path.exists(self.img_dir):
             os.makedirs(self.img_dir)
 
+        # create output file names
+        self.lookup_filename = os.path.join(self.output_dir, LOOKUP_CSV_FILENAME)
         self.cleanup_fullname = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_cleanup.csv")
 
-        # create output file names
-        self.training_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "training_split.csv")
-        self.test_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_test_split.csv")
+        self.training_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_training_split.txt")
+        self.test_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_test_split.txt")
 
         self.training_data_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_train.txt")
         self.test_data_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_test.txt")
@@ -199,6 +200,8 @@ class TNCDataSet:
                                            'ClassID':range(0,len(self.raw_df['Label'].unique()))})
         # update Label_ClassID_Lookup
         self.lookup_df.to_csv(self.label_id_lookup_file, index=False, encoding='utf-8-sig')
+        # save a copy in the output folder
+        self.lookup_df.to_csv(self.lookup_filename, index=False, encoding='utf-8-sig')
         print("Label to ID lookup file created: ", self.label_id_lookup_file)
         print(self.lookup_df.shape)
         # Reading the data
@@ -243,10 +246,11 @@ class TNCDataSet:
             if MIN_DATA_PER_CLEANUP_CLASS != -1:
                 if row == 1:
                     print("Make sure each class has at least ", str(MIN_DATA_PER_CLEANUP_CLASS), " rows.")
+                    temp_df = pd.DataFrame()
                     for i in range(MIN_DATA_PER_CLEANUP_CLASS):
                         temp_df = pd.concat([temp_df, df], ignore_index=True)
                     df = temp_df
-                    print("Adding Row to ", str(df.shape[0]))
+                    print("Adding Row to ", str(temp_df.shape[0]))
                 elif row < MIN_DATA_PER_CLEANUP_CLASS:
                     print("Make sure each class has at least ", str(MIN_DATA_PER_CLEANUP_CLASS), " rows.")
                     for i in range(MIN_DATA_PER_CLEANUP_CLASS - row):
@@ -288,19 +292,19 @@ class TNCDataSet:
             split_index = math.floor(row * TRAINING_TEST_RATIO)
 
             if row == 1:
-                self.train_df = pd.concat([self.train_df, df.iloc[0]], ignore_index=True)
-                self.test_df = pd.concat([self.test_df, df.iloc[0]], ignore_index=True)
+                self.train_df = self.train_df.append(df.iloc[0], ignore_index=True)
+                self.test_df = self.test_df.append(df.iloc[0], ignore_index=True)
             elif row == 2:
-                self.train_df = pd.concat([self.train_df, df.iloc[0]], ignore_index=True)
-                self.test_df = pd.concat([self.test_df, df.iloc[1]], ignore_index=True)
+                self.train_df = self.train_df.append(df.iloc[0], ignore_index=True)
+                self.test_df = self.test_df.append(df.iloc[1], ignore_index=True)
             elif row >= 3:
-                if split_index == row - 1:
-                    split_index = row - 2
-
-            self.train_df = pd.concat([self.train_df, df.iloc[:split_index]], ignore_index=True)
-            self.test_df = pd.concat([self.test_df, df.iloc[split_index:]], ignore_index=True)
-            print("Training:", split_index)
-            print("Test:", row - split_index)
+                if split_index == row:
+                    split_index = row - 1
+                self.train_df = pd.concat([self.train_df, df.iloc[:split_index]], ignore_index=True)
+                self.test_df = pd.concat([self.test_df, df.iloc[split_index:]], ignore_index=True)
+            print("Total rows: ", row)
+            print("Training  : ", split_index)
+            print("Test      : ", row - split_index)
 
         self._adjust_training_data()
 
@@ -324,11 +328,12 @@ class TNCDataSet:
             if MIN_DATA_PER_TRAINING_CLASS != -1:
                 if row == 1:
                     print("Make sure each class has at least ", str(MIN_DATA_PER_TRAINING_CLASS), " rows.")
+                    temp_df = pd.DataFrame()
                     for i in range(MIN_DATA_PER_TRAINING_CLASS):
                         temp_df = pd.concat([temp_df, df], ignore_index=True)
                     df = temp_df
                     print("Adding Row to ", str(df.shape[0]))
-                elif row < MIN_DATA_PER_TRAINING_CLASS:
+                elif (row < MIN_DATA_PER_TRAINING_CLASS) and (row != 0):
                     print("Make sure each class has at least ", str(MIN_DATA_PER_TRAINING_CLASS), " rows.")
                     for i in range(MIN_DATA_PER_TRAINING_CLASS - row):
                         srow = random.randint(1, row)
@@ -358,25 +363,25 @@ class TNCDataSet:
         print("")
         print("")
         print("**********************************************")
-        print("********* STEP 4: Saving Trainig/Test files **")
+        print("********* STEP 4: Saving Training/Test files **")
         print("**********************************************")
         df_train = pd.DataFrame(columns=['FileName', 'ID'])
         for i in range(self.train_df.shape[0]):
             folder = self.train_df.iloc[i]['Folder']
             filename = self.train_df.iloc[i]['FileName']
             f = os.path.join(self.img_dir,folder,filename+".JPG")
-            df_train.iloc[i]['FileName'] = f
-            df_train.iloc[i]['ID'] = self.train_df.iloc[i]['ClassID']
+            df_train = df_train.append({'FileName':f, 'ID':self.train_df.iloc[i]['ClassID']}, ignore_index=True)
         df_train.to_csv(self.training_split_filename, header=False, sep='\t', index=False)
+        print("Training data is saved to ", self.training_split_filename)
 
         df_test = pd.DataFrame(columns=['FileName', 'ID'])
         for i in range(self.test_df.shape[0]):
             folder = self.test_df.iloc[i]['Folder']
             filename = self.test_df.iloc[i]['FileName']
             f = os.path.join(self.img_dir,folder,filename+".JPG")
-            df_test.iloc[i]['FileName'] = f
-            df_test.iloc[i]['ID'] = self.test_df.iloc[i]['ClassID']
+            df_test = df_test.append({'FileName':f, 'ID':self.test_df.iloc[i]['ClassID']}, ignore_index=True)
         df_test.to_csv(self.test_split_filename, header=False, sep='\t', index=False)
+        print("Test data is saved to ", self.test_split_filename)
 
         return
 
@@ -384,7 +389,7 @@ class TNCDataSet:
         print("")
         print("")
         print("**********************************************")
-        print("********* STEP 6: Summerizing  ***************")
+        print("********* STEP 6: Summarizing  ***************")
         print("**********************************************")
 
         with open(self.summary_filename, "w") as summary:
@@ -405,8 +410,8 @@ class TNCDataSet:
             summary.write("=== Raw Data =====\n")
 
             summary.write("CID\tRows\n")
-            for classid in self.class_list:
-                row = self.cleanup_df[self.cleanup_df['Class_ID'] == classid].shape[0]
+            for classid in list(self.class_list):
+                row = self.cleanup_df[self.cleanup_df['ClassID'] == classid].shape[0]
                 summary.write("%d\t%d\n" % (classid, row))
             summary.write("------------------\n")
             summary.write("Total:\t%d\n" % self.cleanup_df.shape[0])
@@ -415,20 +420,20 @@ class TNCDataSet:
             summary.write("==== Training Set ====\n")
             summary.write("CID\tRows\n")
 
-            for classid in self.class_list:
-                row = self.train_df[self.train_df['Class_ID'] == classid].shape[0]
+            for classid in list(self.class_list):
+                row = self.train_df[self.train_df['ClassID'] == classid].shape[0]
                 summary.write("%d\t%d\n" % (classid, row))
             summary.write("------------------\n")
-            summary.write("Total:\t%d\n" % train_df.shape[0])
+            summary.write("Total:\t%d\n" % self.train_df.shape[0])
 
             summary.write("\n\n")
             summary.write("==== Test Set ====\n")
             summary.write("CID\tRows\n")
-            for classid in self.test:
-                row = test_df[test_df['Class_ID'] == classid].shape[0]
+            for classid in  list(self.class_list):
+                row = self.test_df[self.test_df['ClassID'] == classid].shape[0]
                 summary.write("%d\t%d\n" % (classid, row))
             summary.write("------------------\n")
-            summary.write("Total:\t%d\n" % test_df.shape[0])
+            summary.write("Total:\t%d\n" % self.test_df.shape[0])
 
             summary.flush()
             summary.close()
@@ -484,6 +489,7 @@ class TNCDataSet:
                 o.close()
                 print("Test data saved to :", self.test_data_random_fileName)
         return
+
 
 def main():
     app = TNCDataSet()
