@@ -122,7 +122,9 @@ shutil.copyfile(_test_map_file, os.path.join(output_folder, _test_map_filename))
 
 # Creates a minibatch source for training or testing
 def create_mb_source(map_file, image_width, image_height, num_channels, num_classes, randomize=True):
-    transforms = [xforms.scale(width=image_width, height=image_height, channels=num_channels, interpolations='linear')] 
+    transforms = []
+    transforms += [xforms.crop(crop_type='randomside', side_ratio=0.8)]
+    transforms += [xforms.scale(width=image_width, height=image_height, channels=num_channels, interpolations='linear')]
     return MinibatchSource(ImageDeserializer(map_file, StreamDefs(
             features =StreamDef(field='image', transforms=transforms),
             labels   =StreamDef(field='label', shape=num_classes))),
