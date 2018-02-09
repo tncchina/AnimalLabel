@@ -24,11 +24,10 @@ from cntk.metrics import classification_error
 from cntk.logging import log_number_of_parameters, ProgressPrinter
 
 import matplotlib.pyplot as plt
-import math
-import sys
 import datetime
+import shutil
 
-#sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from ConfusionMatrix import ConfusionMatrix
 
 ################################################
@@ -37,9 +36,16 @@ from ConfusionMatrix import ConfusionMatrix
 make_mode = False
 freeze_weights = False
 base_folder = os.path.dirname(os.path.abspath(__file__))
-output_folder = os.path.join(base_folder, "Output_" + datetime.datetime.now().strftime("%Y%m%d%H%M"))
-if not os.path.exists(output_folder):     # create Output folder to store our output files.
-    os.makedirs(output_folder)
+start_datetime = datetime.datetime.now()
+
+# create the output folder
+data_source_folder = os.path.join(base_folder, "Output")
+output_folder = os.path.join(base_folder, "Output_" + start_datetime.strftime("%Y%m%d%H%M"))
+#if not os.path.exists(output_folder):     # create Output folder to store our output files.
+#    os.makedirs(output_folder)
+print("Copying ", data_source_folder, " to ", output_folder)
+shutil.copytree(data_source_folder, output_folder )
+
 output_file = os.path.join(output_folder, "PredictionsOutput.txt")
 output_file_test_predict = os.path.join(output_folder, "Test_Prediction.txt")
 output_figure_loss = os.path.join(output_folder, "Training_Loss.png")
@@ -54,11 +60,11 @@ label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 1
+max_epochs = 200
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
-l2_reg_weight = 0.0005
+l2_reg_weight = 0.005
 
 # define base model location and characteristics
 _base_model_name = "ResNet18_ImageNet_CNTK.model"
@@ -75,10 +81,10 @@ tl_model_file = os.path.join(output_folder, "TNC_" + _base_model_name)
 
 # define data location and characteristics
 _data_folder = os.path.join(base_folder, "DataSets")
-_train_map_filename = "TNC2_FileName_ID_wo_unknow_FullClass_train_random.txt"
-_test_map_filename = "TNC2_FileName_ID_wo_unknow_FullClass_test_random.txt"
-_train_map_file = os.path.join(_data_folder, "TNC2", _train_map_filename)
-_test_map_file = os.path.join(_data_folder, "TNC2", _test_map_filename)
+_train_map_filename = "TNC512_train_random.txt"
+_test_map_filename = "TNC512_test_random.txt"
+_train_map_file = os.path.join(output_folder, _train_map_filename)
+_test_map_file = os.path.join(output_folder,  _test_map_filename)
 
 # get the number of classes from training set
 _num_classes = 0
@@ -110,11 +116,6 @@ with open(_base_model_ID_file_name, 'w') as base_model_id_file:
     base_model_id_file.write("  Learning rate/mb = %s\n" % str(lr_per_mb))
     base_model_id_file.write("  Momentum/mb = %f\n" % momentum_per_mb)
     base_model_id_file.write("  L2 regression weight = %f\n" % l2_reg_weight)
-
-# copy training and testing file to output as backup
-import shutil
-shutil.copyfile(_train_map_file, os.path.join(output_folder, _train_map_filename))
-shutil.copyfile(_test_map_file, os.path.join(output_folder, _test_map_filename))
 
 ################################################
 ################################################
