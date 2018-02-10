@@ -64,7 +64,7 @@ max_epochs = 200
 mb_size = 5
 lr_per_mb = [0.2]*10 + [0.1]
 momentum_per_mb = 0.9
-l2_reg_weight = 0.005
+l2_reg_weight = 0.000005
 
 # define base model location and characteristics
 _base_model_name = "ResNet18_ImageNet_CNTK.model"
@@ -300,6 +300,8 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 if pred_count >= num_images:
                     break
 
+    cm.set_id_lookup_file(os.path.join(output_folder,"Label_ClassID_Lookup.csv"))
+    cm.change_id_to_label()
     cm.print_matrix()
     cm.savetxt(confusion_matrix_file)
 
