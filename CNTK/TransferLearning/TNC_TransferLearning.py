@@ -26,6 +26,7 @@ from cntk.logging import log_number_of_parameters, ProgressPrinter
 import matplotlib.pyplot as plt
 import datetime
 import shutil
+from sklearn.metrics import cohen_kappa_score
 
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from ConfusionMatrix import ConfusionMatrix
@@ -275,6 +276,8 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
 
     cm = ConfusionMatrix()
 
+    y_true = []
+    y_pred = []
     with open(output_file, 'wb') as results_file, open(output_file_test_predict, 'w') as test_predict_file:
         with open(test_map_file, "r") as input_file:
             for line in input_file:
@@ -287,6 +290,8 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 predicted_label = np.argmax(probs)
                 if predicted_label == true_label:
                     correct_count += 1
+                y_true.append(true_label)
+                y_pred.append(predicted_label)
 
                 np.savetxt(results_file, probs[np.newaxis], fmt="%.3f")
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label, np.amax(probs)), fmt="%d %d %.3f", delimiter=',', newline='\n')
@@ -300,12 +305,14 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 if pred_count >= num_images:
                     break
 
+    print("Cohen's Kappa score is ", str(cohen_kappa_score(y_true, y_pred )))
+
     cm.set_id_lookup_file(os.path.join(output_folder,"Label_ClassID_Lookup.csv"))
     cm.change_id_to_label()
     cm.print_matrix()
     cm.savetxt(confusion_matrix_file)
 
-    print ("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, (float(correct_count) / pred_count)))
+    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, (float(correct_count) / pred_count)))
 
 
 if __name__ == '__main__':
