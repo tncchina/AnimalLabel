@@ -27,11 +27,55 @@ IMG_PACKAGE_FILENAME = "TNC512.zip"
 
 # Define a map to rename label ( 'From', 'To')
 # step 1, replacing label
-Label_Rename = ( ('黄牛','家牛'), ('其他人员','其他'))
+Label_Rename = (('空','Empty'),
+                ('其他人员','Human'),
+                ('工作人员','Human'),
+                ('黄牛','家牛'),
+                ('家牛','Animal'),
+                ('松鼠','Animal'),
+                ('鼠','Animal'),
+                ('猕猴','Animal'),
+                ('血雉','Animal'),
+                ('鸟类','Animal'),
+                ('滇金丝猴','Animal'),
+                ('麂属','Animal'),
+                ('家狗','Animal'),
+                ('兽类','Animal'),
+                ('黄喉貂','Animal'),
+                ('山羊','Animal'),
+                ('白腹锦鸡','Animal'),
+                ('豹猫','Animal'),
+                ('赤麂','Animal'),
+                ('红腹角雉','Animal'),
+                ('黑颈长尾雉','Animal'),
+                ('黄鼬','Animal'),
+                ('亚洲黑熊','Animal'),
+                ('绵羊','Animal'),
+                ('野兔','Animal'),
+                ('家羊','Animal'),
+                ('鼯鼠','Animal'),
+                ('鬣羚','Animal'),
+                ('白顶溪鸲','Animal'),
+                ('黄嘴山鸦','Animal'),
+                ('家马','Animal'),
+                ('黑顶噪鹛','Animal'),
+                ('隐纹花鼠','Animal'),
+                ('花面狸','Animal'),
+                ('黑熊','Animal'),
+                ('豪猪','Animal'),
+                ('啄木鸟','Animal'),
+                ('小麂','Animal'),
+                ('鼯鼠属','Animal'),
+                ('白点噪鹛','Animal'),
+                ('长尾地鸫','Animal'),
+                ('眼纹噪鹛','Animal'),
+                ('灰头小鼯鼠','Animal'),
+                ('勺鸡','Animal')
+                )
 # step 2, using 'Category' value to replace following Label and Null
 Label_Missing = ('未知','待鉴定')
 # step 3, removing the row with invalid label
-Label_Remove = ('未知','待鉴定')
+Label_Remove = ('未知','待鉴定','其他')
 
 # ******************** End of parameters ******************************
 
@@ -200,13 +244,14 @@ class TNCDataSet:
                 if label.strip() not in list(self.lookup_df.Label):
                     max_id = max(self.lookup_df.ClassID)
                     print("Appending new label to lookup table")
-                    print("Lable: ", label, " => Assigned Class ID: ", max_id+1 )
+                    print("Label: ", label, " => Assigned Class ID: ", max_id+1 )
                     df = pd.DataFrame({'Label':label, 'ClassID':max_id+1})
                     self.lookup_df.append(df, ignore_index=True)
         else:
             # if we couldn't find Label_ClassID_Lookup, create a new one
             self.lookup_df = pd.DataFrame({'Label':self.raw_df['Label'].unique(),
                                            'ClassID':range(0,len(self.raw_df['Label'].unique()))})
+        self.lookup_df = self.lookup_df[['Label','ClassID']]
         # update Label_ClassID_Lookup
         self.lookup_df.to_csv(self.label_id_lookup_file, index=False, encoding='utf-8-sig')
         # save a copy in the output folder
