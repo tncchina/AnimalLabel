@@ -21,6 +21,7 @@ Usage: 1. Used as object
 import os
 import numpy as np
 import pandas as pd
+from sklearn.metrics import cohen_kappa_score
 
 
 class ConfusionMatrix:
@@ -34,6 +35,9 @@ class ConfusionMatrix:
 
     _lookup_file = ""
     _lookup_df = None
+
+    _true = []
+    _pred = []
 
     def __init__(self, number_of_classes = 2):
         if number_of_classes < 2:
@@ -57,6 +61,9 @@ class ConfusionMatrix:
         if type(true_value)!= int or type(prediction) != int:
             print("Error, both true class ID and predicted class ID should be integer.")
             return
+        self._true.append(true_value)
+        self._pred.append(prediction)
+
         if true_value > prediction:
             smaller = prediction
             bigger = true_value
@@ -91,6 +98,8 @@ class ConfusionMatrix:
             print("Class ID: ", self.class_id_list())
             print("Accuracy: %f" % self.accuracy())
             print(self._m)
+            kappa = "Cohen's Kappa score is " + str(cohen_kappa_score(self._true, self._pred))
+            print(kappa)
         else:
             self._m_df
         return
@@ -112,11 +121,15 @@ class ConfusionMatrix:
             return self._correct_cnt/self._m.sum()
 
     def savetxt(self, text_file_name):
-        headerlines = '=== Confusion Matrix ===\nClass ID: {0:}\nAccuracy: {1:f}\n'.format\
+        headerlines = '=== Confusion Matrix ===\r\nClass ID: {0:}\r\nAccuracy: {1:f}\r\n'.format\
             (str(self.class_id_list()), self.accuracy())
         np.savetxt(text_file_name, self._m, '%.0d',
                    header=headerlines,
-                   footer='========================')
+                   footer='========================',
+                   newline='\r\n')
+        kappa = "Cohen's Kappa score is " + str(cohen_kappa_score(self._true, self._pred))+ "\r\n"
+        with open(text_file_name,'a') as f:
+            f.write(kappa)
         if self._m_df is not None:
             self._m_df.to_excel(text_file_name+".xlsx")
         return
