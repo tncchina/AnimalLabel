@@ -60,11 +60,11 @@ label_stream_name = 'labels'
 new_output_node_name = "prediction"
 
 # Learning parameters
-max_epochs = 200
-mb_size = 5
-lr_per_mb = [0.2]*10 + [0.1]
+max_epochs = 100
+mb_size = 25
+lr_per_mb = [0.1]*30 + [0.01]*30 + [0.001]*30
 momentum_per_mb = 0.9
-l2_reg_weight = 0.005
+l2_reg_weight = 0.05
 
 # define base model location and characteristics
 _base_model_name = "ResNet18_ImageNet_CNTK.model"
@@ -101,7 +101,7 @@ _num_classes += 1
 # Log basic configuration to Output\Configuration.txt
 _base_model_ID_file_name = os.path.join(output_folder, "Configuration.txt")
 with open(_base_model_ID_file_name, 'w') as base_model_id_file:
-    base_model_id_file.write(_base_model_name)
+    base_model_id_file.write("Base Model: %s\n" % _base_model_name)
     base_model_id_file.write("Feature node name: %s\n" % _feature_node_name)
     base_model_id_file.write("Last hidden node: %s\n" % _last_hidden_node_name)
     base_model_id_file.write("Image height  : %d\n" % _image_height)
@@ -287,8 +287,7 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 predicted_label = np.argmax(probs)
                 if predicted_label == true_label:
                     correct_count += 1
-
-                np.savetxt(results_file, probs[np.newaxis], fmt="%.3f")
+                np.savetxt(results_file, probs[np.newaxis], fmt="%.3f", delimiter=',', newline='\n')
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label, np.amax(probs)), fmt="%d %d %.3f", delimiter=',', newline='\n')
                 #np.savetxt(confusion_matrix_file, (true_label, predicted_label), fmt="%d %d",  delimiter=',', newline='\n')
                 #csv_writer.writerow([true_label, predicted_label])
@@ -300,10 +299,12 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
                 if pred_count >= num_images:
                     break
 
+    cm.set_id_lookup_file(os.path.join(output_folder,"Label_ClassID_Lookup.csv"))
+    cm.change_id_to_label()
     cm.print_matrix()
     cm.savetxt(confusion_matrix_file)
 
-    print ("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, (float(correct_count) / pred_count)))
+    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, (float(correct_count) / pred_count)))
 
 
 if __name__ == '__main__':
