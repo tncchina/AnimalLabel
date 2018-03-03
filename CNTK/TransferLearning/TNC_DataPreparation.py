@@ -14,7 +14,7 @@ MIN_DATA_PER_CLEANUP_CLASS = -1
 MAX_DATA_PER_CLEANUP_CLASS = -1
 
 TRAINING_TEST_RATIO = 0.70
-MIN_DATA_PER_TRAINING_CLASS = 200
+MIN_DATA_PER_TRAINING_CLASS = 2693
 MAX_DATA_PER_TRAINING_CLASS = -1
 
 RANDOMIZE_TRAININGDATA_ORDER = True
@@ -351,7 +351,7 @@ class TNCDataSet:
             split_index = math.floor(row * TRAINING_TEST_RATIO) 
             test_num = math.floor(row * (1 - TRAINING_TEST_RATIO)/2)
             # need train, test shuffle and random sample - for selection from random cameras
-            df = df.sample(frac=1).reset_index(drop=True)
+            df = df.sample(frac=1, random_state=123).reset_index(drop=True)
             # add validation set
             if row == 1:
                 self.train_df = self.train_df.append(df.iloc[0], ignore_index=True)
@@ -458,7 +458,7 @@ class TNCDataSet:
             f = os.path.join(self.img_dir,folder,filename+".JPG")
             df_vali = df_vali.append({'FileName':f, 'ID':self.vali_df.iloc[i]['ClassID']}, ignore_index=True)
         df_test.to_csv(self.vali_split_filename, header=False, sep='\t', index=False)
-        print("Test data is saved to ", self.vali_split_filename)       
+        print("Validation data is saved to ", self.vali_split_filename)       
         print("Done.")
         return
 
@@ -483,6 +483,8 @@ class TNCDataSet:
             else:
                 summary.write("Testing set file:\t%s\n" % self.test_data_filename)
 
+            summary.write("Validation set file:\t%s\n" % self.vali_split_filename)
+
             summary.write("\n\n")
             summary.write("=== Raw Data =====\n")
 
@@ -496,7 +498,6 @@ class TNCDataSet:
             summary.write("\n\n")
             summary.write("==== Training Set ====\n")
             summary.write("CID\tRows\n")
-
             for classid in list(self.class_list):
                 row = self.train_df[self.train_df['ClassID'] == classid].shape[0]
                 summary.write("%d\t%d\n" % (classid, row))
@@ -511,6 +512,15 @@ class TNCDataSet:
                 summary.write("%d\t%d\n" % (classid, row))
             summary.write("------------------\n")
             summary.write("Total:\t%d\n" % self.test_df.shape[0])
+
+            summary.write("\n\n")
+            summary.write("==== Validation Set ====\n")
+            summary.write("CID\tRows\n")
+            for classid in  list(self.class_list):
+                row = self.vali_df[self.vali_df['ClassID'] == classid].shape[0]
+                summary.write("%d\t%d\n" % (classid, row))
+            summary.write("------------------\n")
+            summary.write("Total:\t%d\n" % self.vali_df.shape[0])
 
             summary.flush()
             summary.close()
