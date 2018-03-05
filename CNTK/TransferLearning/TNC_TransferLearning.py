@@ -49,7 +49,8 @@ shutil.copytree(data_source_folder, output_folder )
 output_file = os.path.join(output_folder, "PredictionsOutput.txt")
 output_file_test_predict = os.path.join(output_folder, "Test_Prediction.txt")
 output_figure_loss = os.path.join(output_folder, "Training_Loss.png")
-output_figure_error = os.path.join(output_folder, "Prediction_Error.png")
+output_figure_error = os.path.join(output_folder, "Training_Prediction_Error.png")
+output_figure_Test_Correct_Rate = os.path.join(output_folder, "Training_Test_Correct_Rate.png")
 
 confusion_matrix_file = os.path.join(output_folder, "ConfustionMatrix.txt")
 
@@ -152,6 +153,68 @@ def create_model(base_model_file, feature_node_name, last_hidden_node_name, num_
     return z
 
 
+# Evaluates a single image using the provided model
+def eval_single_image(loaded_model, image_path, image_width, image_height):
+    # load and format image (resize, RGB -> BGR, CHW -> HWC)
+    img = Image.open(image_path)
+    if image_path.endswith("png"):
+        temp = Image.new("RGB", img.size, (255, 255, 255))
+        temp.paste(img, img)
+        img = temp
+    resized = img.resize((image_width, image_height), Image.ANTIALIAS)
+    bgr_image = np.asarray(resized, dtype=np.float32)[..., [2, 1, 0]]
+    hwc_format = np.ascontiguousarray(np.rollaxis(bgr_image, 2))
+
+    ## Alternatively: if you want to use opencv-python
+    # cv_img = cv2.imread(image_path)
+    # resized = cv2.resize(cv_img, (image_width, image_height), interpolation=cv2.INTER_NEAREST)
+    # bgr_image = np.asarray(resized, dtype=np.float32)
+    # hwc_format = np.ascontiguousarray(np.rollaxis(bgr_image, 2))
+
+    # compute model output
+    arguments = {loaded_model.arguments[0]: [hwc_format]}
+    output = loaded_model.eval(arguments)
+
+    # return softmax probabilities
+    sm = softmax(output[0])
+    return sm.eval()
+
+
+
+# Evaluates an image set using the provided model
+def eval_test_images_during_training(loaded_model, output_file, test_map_file, image_width, image_height, max_images=-1, column_offset=0):
+    num_images = sum(1 for line in open(test_map_file))
+    if max_images > 0:
+        num_images = min(num_images, max_images)
+    print("Evaluating model output node '{0}' for {1} images.".format(new_output_node_name, num_images))
+
+    pred_count = 0
+    correct_count = 0
+    test_correct_rate = 0.0
+    np.seterr(over='raise')
+
+    with open(test_map_file, "r") as input_file:
+        for line in input_file:
+            tokens = line.rstrip().split('\t')
+            img_file = tokens[0 + column_offset]
+            probs = eval_single_image(loaded_model, img_file, image_width, image_height)
+
+            pred_count += 1
+            true_label = int(tokens[1 + column_offset])
+            predicted_label = np.argmax(probs)
+            if predicted_label == true_label:
+                correct_count += 1
+
+            if pred_count >= num_images:
+                break
+
+    test_correct_rate = float(correct_count) / pred_count
+    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, test_correct_rate))
+    return test_correct_rate
+
+
+
+
 # Trains a transfer learning model
 def train_model(base_model_file, feature_node_name, last_hidden_node_name,
                 image_width, image_height, num_channels, num_classes, train_map_file,
@@ -187,7 +250,7 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     # Get minibatches of images and perform model training
     print("Training transfer learning model for {0} epochs (epoch_size = {1}).".format(num_epochs, epoch_size))
     batch_index = 0
-    plot_data = {'batchindex': list(), 'loss': list(), 'error': list()}
+    plot_data = {'batchindex': list(), 'loss': list(), 'error': list(), 'test_correct_rate': list()}
     log_number_of_parameters(tl_model)
     for epoch in range(num_epochs):       # loop over epochs
         sample_count = 0
@@ -202,6 +265,11 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
             plot_data['batchindex'].append(batch_index)
             plot_data['loss'].append(trainer.previous_minibatch_loss_average)
             plot_data['error'].append(trainer.previous_minibatch_evaluation_average)
+
+            # Evaluate the model against the test set
+            test_correct_rate = eval_test_images_during_training(tl_model, output_file, _test_map_file, _image_width, _image_height)
+            plot_data['test_correct_rate'].append(test_correct_rate)
+
             batch_index += 1
 
         trainer.summarize_training_progress()
@@ -210,10 +278,14 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     window_width = 32
     loss_cumsum = np.cumsum(np.insert(plot_data['loss'], 0, 0))
     error_cumsum = np.cumsum(np.insert(plot_data['error'], 0, 0))
+    test_correct_rate_cumsum = np.cumsum(np.insert(plot_data['test_correct_rate'], 0, 0))
+
     # Moving average.
     plot_data['batchindex'] = np.insert(plot_data['batchindex'], 0, 0)[window_width:]
     plot_data['avg_loss'] = (loss_cumsum[window_width:] - loss_cumsum[:-window_width]) / window_width
     plot_data['avg_error'] = (error_cumsum[window_width:] - error_cumsum[:-window_width]) / window_width
+    plot_data['test_correct_rate'] = (test_correct_rate_cumsum[window_width:] - test_correct_rate_cumsum[:-window_width]) / window_width
+
     plt.figure(1)
     #plt.subplot(211)
     plt.plot(plot_data["batchindex"], plot_data["avg_loss"], 'b--')
@@ -228,38 +300,22 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     plt.plot(plot_data["batchindex"], plot_data["avg_error"], 'r--')
     plt.xlabel('Minibatch number')
     plt.ylabel('Label Prediction Error')
-    plt.title('Minibatch run vs. Label Prediction Error ')
+    plt.title('Minibatch run vs. Training Prediction Error ')
     #plt.show()
     plt.savefig(output_figure_error, bbox_inches='tight')
+
+    plt.figure(3)
+    #plt.subplot(212)
+    plt.plot(plot_data["batchindex"], plot_data["test_correct_rate"], 'r--')
+    plt.xlabel('Minibatch number')
+    plt.ylabel('Test Correct Rate')
+    plt.title('Minibatch run vs. Test Correct Rate ')
+    #plt.show()
+    plt.savefig(output_figure_Test_Correct_Rate, bbox_inches='tight')
 
     return tl_model
 
 
-# Evaluates a single image using the provided model
-def eval_single_image(loaded_model, image_path, image_width, image_height):
-    # load and format image (resize, RGB -> BGR, CHW -> HWC)
-    img = Image.open(image_path)
-    if image_path.endswith("png"):
-        temp = Image.new("RGB", img.size, (255, 255, 255))
-        temp.paste(img, img)
-        img = temp
-    resized = img.resize((image_width, image_height), Image.ANTIALIAS)
-    bgr_image = np.asarray(resized, dtype=np.float32)[..., [2, 1, 0]]
-    hwc_format = np.ascontiguousarray(np.rollaxis(bgr_image, 2))
-
-    ## Alternatively: if you want to use opencv-python
-    # cv_img = cv2.imread(image_path)
-    # resized = cv2.resize(cv_img, (image_width, image_height), interpolation=cv2.INTER_NEAREST)
-    # bgr_image = np.asarray(resized, dtype=np.float32)
-    # hwc_format = np.ascontiguousarray(np.rollaxis(bgr_image, 2))
-
-    # compute model output
-    arguments = {loaded_model.arguments[0]: [hwc_format]}
-    output = loaded_model.eval(arguments)
-
-    # return softmax probabilities
-    sm = softmax(output[0])
-    return sm.eval()
 
 
 # Evaluates an image set using the provided model
@@ -271,6 +327,7 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
 
     pred_count = 0
     correct_count = 0
+    test_correct_rate = 0.0
     np.seterr(over='raise')
 
     cm = ConfusionMatrix()
@@ -304,7 +361,10 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
     cm.print_matrix()
     cm.savetxt(confusion_matrix_file)
 
-    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, (float(correct_count) / pred_count)))
+    test_correct_rate = float(correct_count) / pred_count
+    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, test_correct_rate))
+
+
 
 
 if __name__ == '__main__':
