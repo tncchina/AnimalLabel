@@ -25,7 +25,7 @@ namespace TNCAnimalLabelWebAPI.Controllers
         [Route("api/labels")]
         public IEnumerable<string> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new string[] {  "value1 3" ,  "value2" };
         }
 
         // GET api/<controller>/5
@@ -69,6 +69,7 @@ namespace TNCAnimalLabelWebAPI.Controllers
             string domainBaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string workingDirectory = Environment.CurrentDirectory;
             DeviceDescriptor device = DeviceDescriptor.CPUDevice;
+            string[] class_labels = new string[] { "空", "家牛", "人", "松鼠", "鼠", "猕猴", "血雉", "鸟类", "滇金丝猴", "麂属", "家狗", "兽类", "黄喉貂", "山羊", "白腹锦鸡", "豹猫", "赤麂", "红腹角雉", "黑颈长尾雉", "黄鼬", "亚洲黑熊", "绵羊", "野兔", "家羊", "鼯鼠", "鬣羚", "白顶溪鸲", "黄嘴山鸦", "家马", "黑顶噪鹛", "隐纹花鼠", "花面狸", "黑熊", "豪猪", "啄木鸟", "小麂", "鼯鼠属", "白点噪鹛", "长尾地鸫", "眼纹噪鹛", "灰头小鼯鼠", "勺鸡" };
 
             try
             {
@@ -124,16 +125,28 @@ namespace TNCAnimalLabelWebAPI.Controllers
                 var outputData = outputVal.GetDenseData<float>(outputVar);
 
                 float[] softmax_vals = ActivationFunctions.Softmax(outputData[0]);
-                List<string> o = new List<string>();
+
+                // construct a JSON string.    "class name": prediction of the class.
+                List<string> JSON_str = new List<string>();
+                int class_id = 0;
+                for (; class_id < (softmax_vals.Length); class_id++)
+                {
+                    //JSON_str.Add ( "\"" + class_id.ToString() + "\":\"" + Math.Round(softmax_vals[class_id], 5).ToString() + "\"");
+                    JSON_str.Add( class_labels[class_id] +  "\":\"" + Math.Round(softmax_vals[class_id], 5).ToString());
+                }
+
+                return JSON_str.ToArray<string>();
+
+                //List<string> o = new List<string>();
 
                 // Get results from index 0 in output data since our batch consists of only one image
                 //foreach (float f in outputData[0])
-                foreach (float f in softmax_vals)
-                {
-                    o.Add( Math.Round(f, 5).ToString());
-                }
+                //foreach (float f in softmax_vals)
+                //{
+                //    o.Add( Math.Round(f, 5).ToString());
+                //}
 
-                return o.ToArray<string>();
+                //return o.ToArray<string>();
             }
             catch (Exception ex)
             {
