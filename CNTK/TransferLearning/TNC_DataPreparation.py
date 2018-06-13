@@ -14,7 +14,7 @@ MIN_DATA_PER_CLEANUP_CLASS = -1
 MAX_DATA_PER_CLEANUP_CLASS = -1
 
 TRAINING_TEST_RATIO = 0.80
-MIN_DATA_PER_TRAINING_CLASS = 200
+MIN_DATA_PER_TRAINING_CLASS = 1852
 MAX_DATA_PER_TRAINING_CLASS = -1
 
 RANDOMIZE_TRAININGDATA_ORDER = True
@@ -27,55 +27,14 @@ IMG_PACKAGE_FILENAME = "TNC512.zip"
 
 # Define a map to rename label ( 'From', 'To')
 # step 1, replacing label
-Label_Rename = (('空','Empty'),
-                ('其他人员','Human'),
-                ('工作人员','Human'),
-                ('黄牛','家牛'),
-                ('家牛','Animal'),
-                ('松鼠','Animal'),
-                ('鼠','Animal'),
-                ('猕猴','Animal'),
-                ('血雉','Animal'),
-                ('鸟类','Animal'),
-                ('滇金丝猴','Animal'),
-                ('麂属','Animal'),
-                ('家狗','Animal'),
-                ('兽类','Animal'),
-                ('黄喉貂','Animal'),
-                ('山羊','Animal'),
-                ('白腹锦鸡','Animal'),
-                ('豹猫','Animal'),
-                ('赤麂','Animal'),
-                ('红腹角雉','Animal'),
-                ('黑颈长尾雉','Animal'),
-                ('黄鼬','Animal'),
-                ('亚洲黑熊','Animal'),
-                ('绵羊','Animal'),
-                ('野兔','Animal'),
-                ('家羊','Animal'),
-                ('鼯鼠','Animal'),
-                ('鬣羚','Animal'),
-                ('白顶溪鸲','Animal'),
-                ('黄嘴山鸦','Animal'),
-                ('家马','Animal'),
-                ('黑顶噪鹛','Animal'),
-                ('隐纹花鼠','Animal'),
-                ('花面狸','Animal'),
-                ('黑熊','Animal'),
-                ('豪猪','Animal'),
-                ('啄木鸟','Animal'),
-                ('小麂','Animal'),
-                ('鼯鼠属','Animal'),
-                ('白点噪鹛','Animal'),
-                ('长尾地鸫','Animal'),
-                ('眼纹噪鹛','Animal'),
-                ('灰头小鼯鼠','Animal'),
-                ('勺鸡','Animal')
+Label_Rename = (('其他人员', '人'),
+                ('工作人员', '人'),
+                ('黄牛', '家牛')
                 )
 # step 2, using 'Category' value to replace following Label and Null
-Label_Missing = ('未知','待鉴定')
+Label_Missing = ('未知', '待鉴定')
 # step 3, removing the row with invalid label
-Label_Remove = ('未知','待鉴定','其他')
+Label_Remove = ('未知', '待鉴定', '其他')
 
 # ******************** End of parameters ******************************
 
@@ -194,9 +153,9 @@ class TNCDataSet:
             print("Error: couldn't find 'FileName' column in label file.")
             exit(-1)
         print("Checking images files...")
-        for row in self.raw_df.itertuples():
-            folder = row[4]
-            fn = row[1]
+        for index, row in self.raw_df.iterrows():
+            fn = row['FileName']
+            folder = row['Folder']
             f = os.path.join(self.img_dir, folder, fn+".JPG")
             if not os.path.exists(f):
                 print(f)
@@ -557,6 +516,7 @@ def main():
     app.run()
     print("All Done!")
     return
+
 
 if __name__ == '__main__':
     main()
