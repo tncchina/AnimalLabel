@@ -342,7 +342,8 @@ class TNCDataSet:
                 dest_dir = os.path.join(self.output_dir, 'img', 'training', label)
                 if not os.path.exists(dest_dir):
                     os.makedirs(dest_dir)
-                    for index, row in self.train_df.iterrows():
+                    df = self.train_df[self.train_df['Label'] == label]
+                    for index, row in df.iterrows():
                         source = os.path.join(self.img_dir, row['Folder'], row['FileName'] + '.JPG')
                         destination = os.path.join(dest_dir, row['FileName'] + '.JPG')
                         print(source + " => " + destination)
@@ -355,7 +356,8 @@ class TNCDataSet:
                 dest_dir = os.path.join(self.output_dir, 'img', 'test', label)
                 if not os.path.exists(dest_dir):
                     os.makedirs(dest_dir)
-                    for index, row in self.test_df.iterrows():
+                    df = self.test_df[self.test_df['Label'] == label]
+                    for index, row in df.iterrows():
                         source = os.path.join(self.img_dir, row['Folder'], row['FileName'] + '.JPG')
                         destination = os.path.join(dest_dir, row['FileName'] + '.JPG')
                         print(source + " => " + destination)
