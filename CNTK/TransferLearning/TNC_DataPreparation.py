@@ -17,11 +17,13 @@ TRAINING_TEST_RATIO = 0.80
 MIN_DATA_PER_TRAINING_CLASS = 500
 MAX_DATA_PER_TRAINING_CLASS = -1
 
+ADD_HORIZONTAL_FLIPPED_IMG = True
+
 RANDOMIZE_TRAININGDATA_ORDER = True
 RANDOMIZE_TESTDATA_ORDER = True
 
-COPY_TRAINING_PICTURE = True
-COPY_TEST_PICTURE = True
+COPY_TRAINING_PICTURE = False
+COPY_TEST_PICTURE = False
 
 OUTPUT_FILE_NAME_BASE = "TNC512"
 RAWDATALABEL_FILENAME = "RawDataLabel.csv"
@@ -77,7 +79,7 @@ class TNCDataSet:
         self.rawdatalabel_fullname = os.path.join(self.datasets_dir, RAWDATALABEL_FILENAME)
         self.label_id_lookup_file = os.path.join(self.datasets_dir, LOOKUP_CSV_FILENAME)
         self.img_pack_fullname = os.path.join(self.datasets_dir, IMG_PACKAGE_FILENAME)
-        self.img_dir = os.path.join(self.datasets_dir, "Img")
+        self.img_dir = os.path.join(self.datasets_dir, "img")
         if not os.path.exists(self.img_dir):
             os.makedirs(self.img_dir)
 
@@ -184,7 +186,7 @@ class TNCDataSet:
 
     def _handle_label_removal(self):
         for r in Label_Remove:
-            self.raw_df = self.raw_df[self.raw_df.Label != r]
+            self.raw_df = self.raw_df[self.raw_df['Label'] != r]
         return
 
     def create_label_id_map(self):
@@ -298,7 +300,7 @@ class TNCDataSet:
 
     def create_train_test_data(self):
         print("**********************************************")
-        print("********* STEP 3: Spliting Trainig/Test ******")
+        print("********* STEP 3: Splitting Training/Test ******")
         print("**********************************************")
 
         for classid in self.class_list:
@@ -326,6 +328,8 @@ class TNCDataSet:
         self._copy_training_picture()
         self._copy_test_picture()
 
+        self._generate_training_argument()
+
         self._adjust_training_data()
 
         print("Total training rows: ", self.train_df.shape[0])
@@ -334,6 +338,16 @@ class TNCDataSet:
         self.train_df.to_csv(self.training_split_filename, index=False, encoding='utf-8-sig')
         self.test_df.to_csv(self.test_split_filename, index=False, encoding='utf-8-sig')
         print("Done.")
+        return
+
+    def _generate_training_argument(self):
+        print("**********************************************")
+        print("********* STEP 3.1: Creating Training Argments ******")
+        print("**********************************************")
+        if ADD_HORIZONTAL_FLIPPED_IMG:
+            h_flip_df = self.train_df.copy()
+            h_flip_df['FileName'] = '(H)' + h_flip_df['FileName']
+            self.train_df = self.train_df.append(h_flip_df, ignore_index=True)
         return
 
     def _copy_training_picture(self):
