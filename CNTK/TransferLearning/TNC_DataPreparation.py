@@ -18,6 +18,8 @@ MIN_DATA_PER_TRAINING_CLASS = 500
 MAX_DATA_PER_TRAINING_CLASS = -1
 
 ADD_HORIZONTAL_FLIPPED_IMG = True
+ADD_VERTICAL_FLIPPED_IMG = False
+ADD_BOTH_FLIPPED_IMG = True
 
 RANDOMIZE_TRAININGDATA_ORDER = True
 RANDOMIZE_TESTDATA_ORDER = True
@@ -299,9 +301,9 @@ class TNCDataSet:
         return
 
     def create_train_test_data(self):
-        print("**********************************************")
+        print("************************************************")
         print("********* STEP 3: Splitting Training/Test ******")
-        print("**********************************************")
+        print("************************************************")
 
         for classid in self.class_list:
             print("======Process Class ID: ", str(classid), "=======")
@@ -341,13 +343,25 @@ class TNCDataSet:
         return
 
     def _generate_training_argument(self):
-        print("**********************************************")
-        print("********* STEP 3.1: Creating Training Argments ******")
-        print("**********************************************")
-        if ADD_HORIZONTAL_FLIPPED_IMG:
-            h_flip_df = self.train_df.copy()
-            h_flip_df['FileName'] = '(H)' + h_flip_df['FileName']
-            self.train_df = self.train_df.append(h_flip_df, ignore_index=True)
+        print("****************************************************")
+        print("********* STEP 4: Creating Training Arguments ******")
+        print("****************************************************")
+        if ADD_HORIZONTAL_FLIPPED_IMG or ADD_VERTICAL_FLIPPED_IMG or ADD_BOTH_FLIPPED_IMG:
+            original_training_df = self.train_df.copy()
+            if ADD_HORIZONTAL_FLIPPED_IMG:
+                h_flip_df = original_training_df.copy()
+                h_flip_df['FileName'] = '(H)' + h_flip_df['FileName']
+                self.train_df = self.train_df.append(h_flip_df, ignore_index=True)
+            if ADD_VERTICAL_FLIPPED_IMG:
+                v_flip_df = original_training_df.copy()
+                v_flip_df['FileName'] = '(V)' + v_flip_df['FileName']
+                self.train_df = self.train_df.append(v_flip_df, ignore_index=True)
+            if ADD_BOTH_FLIPPED_IMG:
+                b_flip_df = original_training_df.copy()
+                b_flip_df['FileName'] = '(B)' + b_flip_df['FileName']
+                self.train_df = self.train_df.append(b_flip_df, ignore_index=True)
+        else:
+            print("No flipped image added ")
         return
 
     def _copy_training_picture(self):
@@ -424,9 +438,9 @@ class TNCDataSet:
     def save_training_test(self):
         print("")
         print("")
-        print("**********************************************")
-        print("********* STEP 4: Saving Training/Test files **")
-        print("**********************************************")
+        print("***********************************************")
+        print("********* STEP 5: Saving Training/Test files **")
+        print("***********************************************")
         df_train = pd.DataFrame(columns=['FileName', 'ID'])
         for i in range(self.train_df.shape[0]):
             folder = self.train_df.iloc[i]['Folder']
@@ -451,34 +465,44 @@ class TNCDataSet:
         print("")
         print("")
         print("**********************************************")
-        print("********* STEP 6: Summarizing  ***************")
+        print("********* STEP 7: Summarizing  ***************")
         print("**********************************************")
 
         with open(self.summary_filename, "w") as summary:
-            summary.write("Row Data File:\t%s\n" % self.rawdatalabel_fullname)
-            summary.write("Cleaned-up file:\t%s\n" % self.cleanup_fullname)
-            summary.write("Training/Total rate:\t%.3f\n" % TRAINING_TEST_RATIO)
+            summary.write("Row Data File:\t{!s}\n".format(self.rawdatalabel_fullname))
+            summary.write("Cleaned-up file:\t{!s}\n".format(self.cleanup_fullname))
+            summary.write("Training/Total rate:\t{:.3f}\n".format(TRAINING_TEST_RATIO))
 
-            summary.write("Training data adjustment")
-            if MAX_DATA_PER_TRAINING_CLASS != -1:
+            summary.write("Training data adjustment\n")
+            if MAX_DATA_PER_TRAINING_CLASS == -1:
                 summary.write("\tMaximum data per class: No limit\n")
             else:
-                summary.write("\tMaximum data per class: " + str(MAX_DATA_PER_TRAINING_CLASS) + "\n")
+                summary.write("\tMaximum data per class:\t{!s}\n".format(MAX_DATA_PER_TRAINING_CLASS))
 
-            if MIN_DATA_PER_TRAINING_CLASS != -1:
+            if MIN_DATA_PER_TRAINING_CLASS == -1:
                 summary.write("\tMinimum data per class: No limit\n")
             else:
-                summary.write("\tMinimum data per class: " + str(MIN_DATA_PER_TRAINING_CLASS) + "\n")
+                summary.write("\tMinimum data per class:\t{!s}\n".format(MIN_DATA_PER_TRAINING_CLASS))
+
+            if ADD_HORIZONTAL_FLIPPED_IMG:
+                summary.write("\tIncluding horizontally flipped images:\t{!s}\n".
+                              format(ADD_HORIZONTAL_FLIPPED_IMG))
+            if ADD_VERTICAL_FLIPPED_IMG:
+                summary.write("\tIncluding vertically flipped images:\t{!s}\n".
+                              format(ADD_VERTICAL_FLIPPED_IMG))
+            if ADD_BOTH_FLIPPED_IMG:
+                summary.write("\tIncluding both horizontally and vertically flipped images:\t{!s}\n".
+                              format(ADD_BOTH_FLIPPED_IMG))
 
             if RANDOMIZE_TRAININGDATA_ORDER:
-                summary.write("Training set file:\t%s\n" % self.training_data_random_filename)
+                summary.write("Training set file:\t{!s}\n".format(self.training_data_random_filename))
             else:
-                summary.write("Training set file:\t%s\n" % self.training_data_filename)
+                summary.write("Training set file:\t{!s}\n".format(self.training_data_filename))
 
             if RANDOMIZE_TESTDATA_ORDER:
-                summary.write("Testing set file:\t%s\n" % self.test_data_random_fileName)
+                summary.write("Testing set file:\t{!s}\n".format(self.test_data_random_fileName))
             else:
-                summary.write("Testing set file:\t%s\n" % self.test_data_filename)
+                summary.write("Testing set file:\t{!s}\n".format(self.test_data_filename))
 
             summary.write("\n\n")
             summary.write("=== Raw Data =====\n")
@@ -518,9 +542,9 @@ class TNCDataSet:
     def create_randomized_date(self):
         print("")
         print("")
-        print("**********************************************")
-        print("********* STEP 5: Create Randomize Trainig/Test files **")
-        print("**********************************************")
+        print("*********************************************************")
+        print("********* STEP 6: Create Randomize Training/Test files **")
+        print("*********************************************************")
         if RANDOMIZE_TRAININGDATA_ORDER:
             print("Creating randomized training data.")
             f = open(self.training_split_filename, "r")
