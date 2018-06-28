@@ -4,7 +4,7 @@ import pandas as pd
 base_folder = os.path.dirname(os.path.abspath(__file__))
 datasets_dir = os.path.join(base_folder, "DataSets")
 source_path = os.path.join(datasets_dir, "ByLabelsExt")
-data_label_file = os.path.join(datasets_dir, "RawDataLabel.csv")
+data_label_file = os.path.join(datasets_dir, "RawDataLabelsExt.csv")
 
 df = pd.DataFrame(columns=['FileName', 'Format', 'Folder', 'Category', 'Label'])
 index = 0
