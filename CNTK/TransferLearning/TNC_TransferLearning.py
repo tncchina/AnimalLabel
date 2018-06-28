@@ -49,9 +49,11 @@ shutil.copytree(data_source_folder, output_folder )
 output_file = os.path.join(output_folder, "PredictionsOutput.txt")
 output_file_test_predict = os.path.join(output_folder, "Test_Prediction.txt")
 output_figure_loss = os.path.join(output_folder, "Training_Loss.png")
-output_figure_error = os.path.join(output_folder, "Prediction_Error.png")
+output_figure_error = os.path.join(output_folder, "Training_Prediction_Error.png")
+output_figure_validation_correct_rate = os.path.join(output_folder, "Training_validation_correct_rate.png")
 
 confusion_matrix_file = os.path.join(output_folder, "ConfustionMatrix.txt")
+validation_correct_rate_file = os.path.join(output_folder, "Validation_Correct_Rate.txt")
 
 log_file_name = os.path.join(output_folder, "Logs.txt")
 
@@ -64,7 +66,7 @@ max_epochs = 100
 mb_size = 25
 lr_per_mb = [0.1]*30 + [0.01]*30 + [0.001]*30
 momentum_per_mb = 0.9
-l2_reg_weight = 0.05
+l2_reg_weight = 0.00005
 
 # define base model location and characteristics
 _base_model_name = "ResNet18_ImageNet_CNTK.model"
@@ -72,8 +74,8 @@ _base_model_name = "ResNet18_ImageNet_CNTK.model"
 _base_model_file = os.path.join(base_folder, "PretrainedModels", _base_model_name)
 _feature_node_name = "features"
 _last_hidden_node_name = "z.x"
-_image_height = 682
-_image_width = 512
+_image_width = 682
+_image_height = 512
 _num_channels = 3
 
 # define the file name we will save our trained model to.  It is "TNC_" + _base_model_name
@@ -110,9 +112,9 @@ with open(_base_model_ID_file_name, 'w') as base_model_id_file:
     base_model_id_file.write("Training set: %s\n" % _train_map_file)
     base_model_id_file.write("Test set    : %s\n" % _test_map_file)
     base_model_id_file.write("Number of classes: %d\n" % _num_classes)
-    base_model_id_file.write("Traiing Parameters:\n")
+    base_model_id_file.write("Training Parameters:\n")
     base_model_id_file.write("  Max epochs = %d\n" % max_epochs)
-    base_model_id_file.write("  Minibatch size = %d\n" % mb_size)
+    base_model_id_file.write("  Mini-batch size = %d\n" % mb_size)
     base_model_id_file.write("  Learning rate/mb = %s\n" % str(lr_per_mb))
     base_model_id_file.write("  Momentum/mb = %f\n" % momentum_per_mb)
     base_model_id_file.write("  L2 regression weight = %f\n" % l2_reg_weight)
@@ -146,6 +148,7 @@ def create_model(base_model_file, feature_node_name, last_hidden_node_name, num_
 
     # Add new dense layer for class prediction
     feat_norm  = input_features - Constant(114)
+    feat_norm  = C.element_times(1.0/256.0, feat_norm)
     cloned_out = cloned_layers(feat_norm)
     z          = Dense(num_classes, activation=None, name=new_output_node_name) (cloned_out)
 
@@ -160,7 +163,7 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     if max_images > 0:
         epoch_size = min(epoch_size, max_images)
 
-    # Create the minibatch source and input variables
+    # Create the mini-batch source and input variables
     minibatch_source = create_mb_source(train_map_file, image_width, image_height, num_channels, num_classes)
     image_input = C.input_variable((num_channels, image_height, image_width))
     label_input = C.input_variable(num_classes)
@@ -184,17 +187,24 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
     #progress_printer = ProgressPrinter(tag='Training', log_to_file=log_file_name, num_epochs=num_epochs)
     trainer = Trainer(tl_model, (ce, pe), learner, progress_printer)
 
-    # Get minibatches of images and perform model training
+    # Get mini-batches of images and perform model training
     print("Training transfer learning model for {0} epochs (epoch_size = {1}).".format(num_epochs, epoch_size))
     batch_index = 0
-    plot_data = {'batchindex': list(), 'loss': list(), 'error': list()}
+    plot_data = {'batchindex': list(), 'loss': list(), 'error': list(),
+                 'epoch_index':list(), 'validation_correct_rate': list()}
     log_number_of_parameters(tl_model)
+    
+    vcr_log = open(validation_correct_rate_file, 'w')
+
     for epoch in range(num_epochs):       # loop over epochs
+        print("")
+        print("===== EPOCH {0} =======".format(epoch))
         sample_count = 0
-        while sample_count < epoch_size:  # loop over minibatches in the epoch
+        while sample_count < epoch_size:  # loop over mini-batches in the epoch
             data = minibatch_source.next_minibatch(min(mb_size, epoch_size-sample_count), input_map=input_map)
             trainer.train_minibatch(data)                                    # update model with it
             sample_count += trainer.previous_minibatch_sample_count          # count samples processed so far
+            print("Epoch {0}: Processed {1} of {2} samples".format(epoch, sample_count, epoch_size))
             #if sample_count % (100 * mb_size) == 0:
             #    print ("Processed {0} samples".format(sample_count))
             # For visualization...
@@ -203,34 +213,55 @@ def train_model(base_model_file, feature_node_name, last_hidden_node_name,
             plot_data['loss'].append(trainer.previous_minibatch_loss_average)
             plot_data['error'].append(trainer.previous_minibatch_evaluation_average)
             batch_index += 1
+        # Evaluate the model on the validation
+        validation_correct_rate = eval_validation_images_during_training(tl_model, output_file, _test_map_file,
+                                                                         _image_width, _image_height)
+        plot_data['epoch_index'].append(epoch)
+        plot_data['validation_correct_rate'].append(validation_correct_rate)
+
+        vcr_log.write("{0}\t{1}\n".format(epoch+1, validation_correct_rate))
 
         trainer.summarize_training_progress()
+
+    vcr_log.flush()
+    vcr_log.close()
 
     # Visualize training result:
     window_width = 32
     loss_cumsum = np.cumsum(np.insert(plot_data['loss'], 0, 0))
     error_cumsum = np.cumsum(np.insert(plot_data['error'], 0, 0))
+
     # Moving average.
     plot_data['batchindex'] = np.insert(plot_data['batchindex'], 0, 0)[window_width:]
     plot_data['avg_loss'] = (loss_cumsum[window_width:] - loss_cumsum[:-window_width]) / window_width
     plot_data['avg_error'] = (error_cumsum[window_width:] - error_cumsum[:-window_width]) / window_width
+
     plt.figure(1)
     #plt.subplot(211)
     plt.plot(plot_data["batchindex"], plot_data["avg_loss"], 'b--')
-    plt.xlabel('Minibatch number')
+    plt.xlabel('Mini-batch number')
     plt.ylabel('Loss')
-    plt.title('Minibatch run vs. Training loss ')
+    plt.title('Mini-batch run vs. Training loss ')
     #plt.show()
     plt.savefig(output_figure_loss, bbox_inches='tight' )
 
     plt.figure(2)
     #plt.subplot(212)
     plt.plot(plot_data["batchindex"], plot_data["avg_error"], 'r--')
-    plt.xlabel('Minibatch number')
+    plt.xlabel('Mini-batch number')
     plt.ylabel('Label Prediction Error')
-    plt.title('Minibatch run vs. Label Prediction Error ')
+    plt.title('Mini-batch run vs. Training Prediction Error ')
     #plt.show()
     plt.savefig(output_figure_error, bbox_inches='tight')
+
+    plt.figure(3)
+    #plt.subplot(212)
+    plt.plot(plot_data["epoch_index"], plot_data["validation_correct_rate"], 'r--')
+    plt.xlabel('Epoch number')
+    plt.ylabel('Validation Correct Rate')
+    plt.title('Epoch vs. Validation Correct Rate ')
+    #plt.show()
+    plt.savefig(output_figure_validation_correct_rate, bbox_inches='tight')
 
     return tl_model
 
@@ -260,7 +291,6 @@ def eval_single_image(loaded_model, image_path, image_width, image_height):
     # return softmax probabilities
     sm = softmax(output[0])
     return sm.eval()
-
 
 # Evaluates an image set using the provided model
 def eval_test_images(loaded_model, output_file, test_map_file, image_width, image_height, max_images=-1, column_offset=0):
@@ -305,6 +335,87 @@ def eval_test_images(loaded_model, output_file, test_map_file, image_width, imag
     cm.savetxt(confusion_matrix_file)
 
     print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, (float(correct_count) / pred_count)))
+
+
+# Evaluates an image set using the provided model
+def eval_validation_images_during_training(loaded_model, output_file, test_map_file, image_width, image_height, max_images=-1, column_offset=0):
+    num_images = sum(1 for line in open(test_map_file))
+    if max_images > 0:
+        num_images = min(num_images, max_images)
+    print("Evaluating model output node '{0}' for {1} images.".format(new_output_node_name, num_images))
+
+    pred_count = 0
+    correct_count = 0
+    validation_correct_rate = 0.0
+    np.seterr(over='raise')
+
+    with open(test_map_file, "r") as input_file:
+        for line in input_file:
+            tokens = line.rstrip().split('\t')
+            img_file = tokens[0 + column_offset]
+            probs = eval_single_image(loaded_model, img_file, image_width, image_height)
+
+            pred_count += 1
+            true_label = int(tokens[1 + column_offset])
+            predicted_label = np.argmax(probs)
+            if predicted_label == true_label:
+                correct_count += 1
+
+            if pred_count >= num_images:
+                break
+
+    validation_correct_rate = float(correct_count) / pred_count
+    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, validation_correct_rate))
+    return validation_correct_rate
+
+
+# Evaluates an image set using the provided model
+def eval_validation_images(loaded_model, output_file, test_map_file, image_width, image_height, max_images=-1, column_offset=0):
+    num_images = sum(1 for line in open(test_map_file))
+    if max_images > 0:
+        num_images = min(num_images, max_images)
+    print("Evaluating model output node '{0}' for {1} images.".format(new_output_node_name, num_images))
+
+    pred_count = 0
+    correct_count = 0
+    validation_correct_rate = 0.0
+    np.seterr(over='raise')
+
+    cm = ConfusionMatrix()
+
+    with open(output_file, 'wb') as results_file, open(output_file_test_predict, 'w') as test_predict_file:
+        with open(test_map_file, "r") as input_file:
+            for line in input_file:
+                tokens = line.rstrip().split('\t')
+                img_file = tokens[0 + column_offset]
+                probs = eval_single_image(loaded_model, img_file, image_width, image_height)
+
+                pred_count += 1
+                true_label = int(tokens[1 + column_offset])
+                predicted_label = np.argmax(probs)
+                if predicted_label == true_label:
+                    correct_count += 1
+                np.savetxt(results_file, probs[np.newaxis], fmt="%.3f", delimiter=',', newline='\n')
+                #np.savetxt(confusion_matrix_file, (true_label, predicted_label, np.amax(probs)), fmt="%d %d %.3f", delimiter=',', newline='\n')
+                #np.savetxt(confusion_matrix_file, (true_label, predicted_label), fmt="%d %d",  delimiter=',', newline='\n')
+                #csv_writer.writerow([true_label, predicted_label])
+                test_predict_file.write("%s,%d,%d,%0.3f\n" % (os.path.basename(img_file), true_label, predicted_label, np.amax(probs)))
+                cm.add_result(int(true_label), int(predicted_label))
+
+                if pred_count % 100 == 0:
+                    print("Processed {0} samples ({1} correct)".format(pred_count, (float(correct_count) / pred_count)))
+                if pred_count >= num_images:
+                    break
+
+    cm.set_id_lookup_file(os.path.join(output_folder,"Label_ClassID_Lookup.csv"))
+    cm.change_id_to_label()
+    cm.print_matrix()
+    cm.savetxt(confusion_matrix_file)
+
+    validation_correct_rate = float(correct_count) / pred_count
+    print("{0} out of {1} predictions were correct {2}.".format(correct_count, pred_count, validation_correct_rate))
+
+
 
 
 if __name__ == '__main__':
