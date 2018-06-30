@@ -3,7 +3,7 @@ import pandas as pd
 import random
 import math
 import zipfile
-
+from shutil import copyfile
 
 #
 # RAWDATALABEL_FILENAME -><filters...>-> CLEANUP_DATA_FILE -><Split and randomize>-> Training set and test set
@@ -14,11 +14,18 @@ MIN_DATA_PER_CLEANUP_CLASS = -1
 MAX_DATA_PER_CLEANUP_CLASS = -1
 
 TRAINING_TEST_RATIO = 0.80
-MIN_DATA_PER_TRAINING_CLASS = 200
+MIN_DATA_PER_TRAINING_CLASS = 500
 MAX_DATA_PER_TRAINING_CLASS = -1
+
+ADD_HORIZONTAL_FLIPPED_IMG = True
+ADD_VERTICAL_FLIPPED_IMG = False
+ADD_BOTH_FLIPPED_IMG = True
 
 RANDOMIZE_TRAININGDATA_ORDER = True
 RANDOMIZE_TESTDATA_ORDER = True
+
+COPY_TRAINING_PICTURE = False
+COPY_TEST_PICTURE = False
 
 OUTPUT_FILE_NAME_BASE = "TNC512"
 RAWDATALABEL_FILENAME = "RawDataLabel.csv"
@@ -27,57 +34,17 @@ IMG_PACKAGE_FILENAME = "TNC512.zip"
 
 # Define a map to rename label ( 'From', 'To')
 # step 1, replacing label
-Label_Rename = (('空','Empty'),
-                ('其他人员','Human'),
-                ('工作人员','Human'),
-                ('黄牛','家牛'),
-                ('家牛','Animal'),
-                ('松鼠','Animal'),
-                ('鼠','Animal'),
-                ('猕猴','Animal'),
-                ('血雉','Animal'),
-                ('鸟类','Animal'),
-                ('滇金丝猴','Animal'),
-                ('麂属','Animal'),
-                ('家狗','Animal'),
-                ('兽类','Animal'),
-                ('黄喉貂','Animal'),
-                ('山羊','Animal'),
-                ('白腹锦鸡','Animal'),
-                ('豹猫','Animal'),
-                ('赤麂','Animal'),
-                ('红腹角雉','Animal'),
-                ('黑颈长尾雉','Animal'),
-                ('黄鼬','Animal'),
-                ('亚洲黑熊','Animal'),
-                ('绵羊','Animal'),
-                ('野兔','Animal'),
-                ('家羊','Animal'),
-                ('鼯鼠','Animal'),
-                ('鬣羚','Animal'),
-                ('白顶溪鸲','Animal'),
-                ('黄嘴山鸦','Animal'),
-                ('家马','Animal'),
-                ('黑顶噪鹛','Animal'),
-                ('隐纹花鼠','Animal'),
-                ('花面狸','Animal'),
-                ('黑熊','Animal'),
-                ('豪猪','Animal'),
-                ('啄木鸟','Animal'),
-                ('小麂','Animal'),
-                ('鼯鼠属','Animal'),
-                ('白点噪鹛','Animal'),
-                ('长尾地鸫','Animal'),
-                ('眼纹噪鹛','Animal'),
-                ('灰头小鼯鼠','Animal'),
-                ('勺鸡','Animal')
+Label_Rename = (('其他人员', '人'),
+                ('工作人员', '人'),
+                ('黄牛', '家牛')
                 )
 # step 2, using 'Category' value to replace following Label and Null
-Label_Missing = ('未知','待鉴定')
+Label_Missing = ('未知', '待鉴定')
 # step 3, removing the row with invalid label
-Label_Remove = ('未知','待鉴定','其他')
+Label_Remove = ('未知', '待鉴定', '其他')
 
 # ******************** End of parameters ******************************
+
 
 class TNCDataSet:
     raw_df = None
@@ -114,7 +81,7 @@ class TNCDataSet:
         self.rawdatalabel_fullname = os.path.join(self.datasets_dir, RAWDATALABEL_FILENAME)
         self.label_id_lookup_file = os.path.join(self.datasets_dir, LOOKUP_CSV_FILENAME)
         self.img_pack_fullname = os.path.join(self.datasets_dir, IMG_PACKAGE_FILENAME)
-        self.img_dir = os.path.join(self.datasets_dir, "Img")
+        self.img_dir = os.path.join(self.datasets_dir, "img")
         if not os.path.exists(self.img_dir):
             os.makedirs(self.img_dir)
 
@@ -147,7 +114,7 @@ class TNCDataSet:
         if 'Format' not in self.raw_df.columns:
             print("Couldn't find column 'Format")
             return False
-        self.raw_df = self.raw_df[self.raw_df['Format']=='JPG']
+        self.raw_df = self.raw_df[self.raw_df['Format'] == 'JPG']
         print("Total Images:", self.raw_df.shape[0])
         print("Total labels:", len(self.raw_df['Label'].unique()))
         return True
@@ -194,9 +161,9 @@ class TNCDataSet:
             print("Error: couldn't find 'FileName' column in label file.")
             exit(-1)
         print("Checking images files...")
-        for row in self.raw_df.itertuples():
-            folder = row[4]
-            fn = row[1]
+        for index, row in self.raw_df.iterrows():
+            fn = row['FileName']
+            folder = row['Folder']
             f = os.path.join(self.img_dir, folder, fn+".JPG")
             if not os.path.exists(f):
                 print(f)
@@ -209,19 +176,19 @@ class TNCDataSet:
         return
 
     def _handle_missing_label(self):
-        self.raw_df.loc[self.raw_df.Label.isnull(),['Label']] = self.raw_df['Category']
+        self.raw_df.loc[self.raw_df.Label.isnull(), ['Label']] = self.raw_df['Category']
         for r in Label_Missing:
             self.raw_df.loc[self.raw_df['Label'] == r, ['Label']] = self.raw_df['Category']
         return
 
     def _handle_label_replacement(self):
         for from_label, to_label in Label_Rename:
-            self.raw_df.loc[self.raw_df['Label']==from_label, 'Label'] = to_label
+            self.raw_df.loc[self.raw_df['Label'] == from_label, 'Label'] = to_label
         return
 
     def _handle_label_removal(self):
         for r in Label_Remove:
-            self.raw_df = self.raw_df[self.raw_df.Label!=r]
+            self.raw_df = self.raw_df[self.raw_df['Label'] != r]
         return
 
     def create_label_id_map(self):
@@ -233,7 +200,6 @@ class TNCDataSet:
         self._handle_label_removal()
 
         unique_labels = list(self.raw_df['Label'].unique())
-        number_of_label = len(unique_labels)
         # if we Label_ClassID_Lookup exists, we use it
         if os.path.exists(self.label_id_lookup_file):
             self.lookup_df = pd.read_csv(self.label_id_lookup_file)
@@ -244,14 +210,14 @@ class TNCDataSet:
                 if label.strip() not in list(self.lookup_df.Label):
                     max_id = max(self.lookup_df.ClassID)
                     print("Appending new label to lookup table")
-                    print("Label: ", label, " => Assigned Class ID: ", max_id+1 )
-                    df = pd.DataFrame({'Label':label, 'ClassID':max_id+1})
+                    print("Label: ", label, " => Assigned Class ID: ", max_id+1)
+                    df = pd.DataFrame({'Label': label, 'ClassID': max_id+1})
                     self.lookup_df.append(df, ignore_index=True)
         else:
             # if we couldn't find Label_ClassID_Lookup, create a new one
-            self.lookup_df = pd.DataFrame({'Label':self.raw_df['Label'].unique(),
-                                           'ClassID':range(0,len(self.raw_df['Label'].unique()))})
-        self.lookup_df = self.lookup_df[['Label','ClassID']]
+            self.lookup_df = pd.DataFrame({'Label': self.raw_df['Label'].unique(),
+                                           'ClassID': range(0, len(self.raw_df['Label'].unique()))})
+        self.lookup_df = self.lookup_df[['Label', 'ClassID']]
         # update Label_ClassID_Lookup
         self.lookup_df.to_csv(self.label_id_lookup_file, index=False, encoding='utf-8-sig')
         # save a copy in the output folder
@@ -277,13 +243,11 @@ class TNCDataSet:
         self.raw_df['ClassID'] = 0
         for row in self.lookup_df.itertuples():
             label = row[1]
-            class_id =  row[2]
-            self.raw_df.loc[self.raw_df['Label']==label, 'ClassID'] = class_id
+            class_id = row[2]
+            self.raw_df.loc[self.raw_df['Label'] == label, 'ClassID'] = class_id
         return
 
     def create_clean_up_data(self):
-        temp_df = pd.DataFrame()
-
         print("**********************************************")
         print("********* STEP 2: Clean up data **************")
         print("**********************************************")
@@ -292,7 +256,7 @@ class TNCDataSet:
         if 'ClassID' not in self.raw_df.columns:
             self._assign_class_id()
         for classid in self.class_list:
-            label = self.lookup_df.loc[self.lookup_df['ClassID']==classid,'Label'].iloc[0]
+            label = self.lookup_df.loc[self.lookup_df['ClassID'] == classid, 'Label'].iloc[0]
             print("======Process Class ID: ", str(classid), "(", label, ") =======")
             df = self.raw_df[self.raw_df['ClassID'] == classid]
             row = df.shape[0]
@@ -337,13 +301,13 @@ class TNCDataSet:
         return
 
     def create_train_test_data(self):
-        print("**********************************************")
-        print("********* STEP 3: Spliting Trainig/Test ******")
-        print("**********************************************")
+        print("************************************************")
+        print("********* STEP 3: Splitting Training/Test ******")
+        print("************************************************")
 
         for classid in self.class_list:
             print("======Process Class ID: ", str(classid), "=======")
-            df =self.cleanup_df[self.cleanup_df['ClassID'] == classid]
+            df = self.cleanup_df[self.cleanup_df['ClassID'] == classid]
 
             row = df.shape[0]
             split_index = math.floor(row * TRAINING_TEST_RATIO)
@@ -363,6 +327,11 @@ class TNCDataSet:
             print("Training  : ", split_index)
             print("Test      : ", row - split_index)
 
+        self._copy_training_picture()
+        self._copy_test_picture()
+
+        self._generate_training_argument()
+
         self._adjust_training_data()
 
         print("Total training rows: ", self.train_df.shape[0])
@@ -373,11 +342,60 @@ class TNCDataSet:
         print("Done.")
         return
 
+    def _generate_training_argument(self):
+        print("****************************************************")
+        print("********* STEP 4: Creating Training Arguments ******")
+        print("****************************************************")
+        if ADD_HORIZONTAL_FLIPPED_IMG or ADD_VERTICAL_FLIPPED_IMG or ADD_BOTH_FLIPPED_IMG:
+            original_training_df = self.train_df.copy()
+            if ADD_HORIZONTAL_FLIPPED_IMG:
+                h_flip_df = original_training_df.copy()
+                h_flip_df['FileName'] = '(H)' + h_flip_df['FileName']
+                self.train_df = self.train_df.append(h_flip_df, ignore_index=True)
+            if ADD_VERTICAL_FLIPPED_IMG:
+                v_flip_df = original_training_df.copy()
+                v_flip_df['FileName'] = '(V)' + v_flip_df['FileName']
+                self.train_df = self.train_df.append(v_flip_df, ignore_index=True)
+            if ADD_BOTH_FLIPPED_IMG:
+                b_flip_df = original_training_df.copy()
+                b_flip_df['FileName'] = '(B)' + b_flip_df['FileName']
+                self.train_df = self.train_df.append(b_flip_df, ignore_index=True)
+        else:
+            print("No flipped image added ")
+        return
+
+    def _copy_training_picture(self):
+        if COPY_TRAINING_PICTURE:
+            for label in self.train_df['Label'].unique():
+                dest_dir = os.path.join(self.output_dir, 'img', 'training', label)
+                if not os.path.exists(dest_dir):
+                    os.makedirs(dest_dir)
+                    df = self.train_df[self.train_df['Label'] == label]
+                    for index, row in df.iterrows():
+                        source = os.path.join(self.img_dir, row['Folder'], row['FileName'] + '.JPG')
+                        destination = os.path.join(dest_dir, row['FileName'] + '.JPG')
+                        print(source + " => " + destination)
+                        copyfile(source, destination)
+        return
+
+    def _copy_test_picture(self):
+        if COPY_TEST_PICTURE:
+            for label in self.test_df['Label'].unique():
+                dest_dir = os.path.join(self.output_dir, 'img', 'test', label)
+                if not os.path.exists(dest_dir):
+                    os.makedirs(dest_dir)
+                    df = self.test_df[self.test_df['Label'] == label]
+                    for index, row in df.iterrows():
+                        source = os.path.join(self.img_dir, row['Folder'], row['FileName'] + '.JPG')
+                        destination = os.path.join(dest_dir, row['FileName'] + '.JPG')
+                        print(source + " => " + destination)
+                        copyfile(source, destination)
+        return
+
     def _adjust_training_data(self):
         adj_df = pd.DataFrame()
-        temp_df = pd.DataFrame()
         for classid in self.class_list:
-            label = self.lookup_df.loc[self.lookup_df['ClassID']==classid, 'Label'].iloc[0]
+            label = self.lookup_df.loc[self.lookup_df['ClassID'] == classid, 'Label'].iloc[0]
             print("======Process Class ID: ", str(classid), "(", label, ") =======")
             df = self.train_df[self.train_df['ClassID'] == classid]
             row = df.shape[0]
@@ -420,15 +438,15 @@ class TNCDataSet:
     def save_training_test(self):
         print("")
         print("")
-        print("**********************************************")
-        print("********* STEP 4: Saving Training/Test files **")
-        print("**********************************************")
+        print("***********************************************")
+        print("********* STEP 5: Saving Training/Test files **")
+        print("***********************************************")
         df_train = pd.DataFrame(columns=['FileName', 'ID'])
         for i in range(self.train_df.shape[0]):
             folder = self.train_df.iloc[i]['Folder']
             filename = self.train_df.iloc[i]['FileName']
-            f = os.path.join(self.img_dir,folder,filename+".JPG")
-            df_train = df_train.append({'FileName':f, 'ID':self.train_df.iloc[i]['ClassID']}, ignore_index=True)
+            f = os.path.join(self.img_dir, folder, filename+".JPG")
+            df_train = df_train.append({'FileName': f, 'ID': self.train_df.iloc[i]['ClassID']}, ignore_index=True)
         df_train.to_csv(self.training_split_filename, header=False, sep='\t', index=False)
         print("Training data is saved to ", self.training_split_filename)
 
@@ -436,8 +454,8 @@ class TNCDataSet:
         for i in range(self.test_df.shape[0]):
             folder = self.test_df.iloc[i]['Folder']
             filename = self.test_df.iloc[i]['FileName']
-            f = os.path.join(self.img_dir,folder,filename+".JPG")
-            df_test = df_test.append({'FileName':f, 'ID':self.test_df.iloc[i]['ClassID']}, ignore_index=True)
+            f = os.path.join(self.img_dir, folder, filename+".JPG")
+            df_test = df_test.append({'FileName': f, 'ID': self.test_df.iloc[i]['ClassID']}, ignore_index=True)
         df_test.to_csv(self.test_split_filename, header=False, sep='\t', index=False)
         print("Test data is saved to ", self.test_split_filename)
         print("Done.")
@@ -447,22 +465,44 @@ class TNCDataSet:
         print("")
         print("")
         print("**********************************************")
-        print("********* STEP 6: Summarizing  ***************")
+        print("********* STEP 7: Summarizing  ***************")
         print("**********************************************")
 
         with open(self.summary_filename, "w") as summary:
-            summary.write("Row Data File:\t%s\n" % self.rawdatalabel_fullname)
-            summary.write("Cleaned-up file:\t%s\n" % self.cleanup_fullname)
-            summary.write("Training/Total rate:\t%.3f\n" % TRAINING_TEST_RATIO)
-            if RANDOMIZE_TRAININGDATA_ORDER:
-                summary.write("Training set file:\t%s\n" % self.training_data_random_filename)
+            summary.write("Row Data File:\t{!s}\n".format(self.rawdatalabel_fullname))
+            summary.write("Cleaned-up file:\t{!s}\n".format(self.cleanup_fullname))
+            summary.write("Training/Total rate:\t{:.3f}\n".format(TRAINING_TEST_RATIO))
+
+            summary.write("Training data adjustment\n")
+            if MAX_DATA_PER_TRAINING_CLASS == -1:
+                summary.write("\tMaximum data per class: No limit\n")
             else:
-                summary.write("Training set file:\t%s\n" % self.training_data_filename)
+                summary.write("\tMaximum data per class:\t{!s}\n".format(MAX_DATA_PER_TRAINING_CLASS))
+
+            if MIN_DATA_PER_TRAINING_CLASS == -1:
+                summary.write("\tMinimum data per class: No limit\n")
+            else:
+                summary.write("\tMinimum data per class:\t{!s}\n".format(MIN_DATA_PER_TRAINING_CLASS))
+
+            if ADD_HORIZONTAL_FLIPPED_IMG:
+                summary.write("\tIncluding horizontally flipped images:\t{!s}\n".
+                              format(ADD_HORIZONTAL_FLIPPED_IMG))
+            if ADD_VERTICAL_FLIPPED_IMG:
+                summary.write("\tIncluding vertically flipped images:\t{!s}\n".
+                              format(ADD_VERTICAL_FLIPPED_IMG))
+            if ADD_BOTH_FLIPPED_IMG:
+                summary.write("\tIncluding both horizontally and vertically flipped images:\t{!s}\n".
+                              format(ADD_BOTH_FLIPPED_IMG))
+
+            if RANDOMIZE_TRAININGDATA_ORDER:
+                summary.write("Training set file:\t{!s}\n".format(self.training_data_random_filename))
+            else:
+                summary.write("Training set file:\t{!s}\n".format(self.training_data_filename))
 
             if RANDOMIZE_TESTDATA_ORDER:
-                summary.write("Testing set file:\t%s\n" % self.test_data_random_fileName)
+                summary.write("Testing set file:\t{!s}\n".format(self.test_data_random_fileName))
             else:
-                summary.write("Testing set file:\t%s\n" % self.test_data_filename)
+                summary.write("Testing set file:\t{!s}\n".format(self.test_data_filename))
 
             summary.write("\n\n")
             summary.write("=== Raw Data =====\n")
@@ -487,7 +527,7 @@ class TNCDataSet:
             summary.write("\n\n")
             summary.write("==== Test Set ====\n")
             summary.write("CID\tRows\n")
-            for classid in  list(self.class_list):
+            for classid in list(self.class_list):
                 row = self.test_df[self.test_df['ClassID'] == classid].shape[0]
                 summary.write("%d\t%d\n" % (classid, row))
             summary.write("------------------\n")
@@ -502,15 +542,14 @@ class TNCDataSet:
     def create_randomized_date(self):
         print("")
         print("")
-        print("**********************************************")
-        print("********* STEP 5: Create Randomize Trainig/Test files **")
-        print("**********************************************")
+        print("*********************************************************")
+        print("********* STEP 6: Create Randomize Training/Test files **")
+        print("*********************************************************")
         if RANDOMIZE_TRAININGDATA_ORDER:
             print("Creating randomized training data.")
             f = open(self.training_split_filename, "r")
             o = open(self.training_data_random_filename, "w")
             read_buffer = []
-            total_lines = 0
             if f and o:
                 for line in f:
                     read_buffer.append(line)
@@ -532,7 +571,6 @@ class TNCDataSet:
             f = open(self.test_split_filename, "r")
             o = open(self.test_data_random_fileName, "w")
             read_buffer = []
-            total_lines = 0
             if f and o:
                 for line in f:
                     read_buffer.append(line)
@@ -557,6 +595,7 @@ def main():
     app.run()
     print("All Done!")
     return
+
 
 if __name__ == '__main__':
     main()
