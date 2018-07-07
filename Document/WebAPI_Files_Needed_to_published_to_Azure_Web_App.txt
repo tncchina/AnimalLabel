@@ -1,0 +1,55 @@
+1>------ Build started: Project: TNCAnimalLabelWebAPI, Configuration: Debug x64 ------
+1>  TNCAnimalLabelWebAPI -> C:\tncchina\AnimalLabel\AzureWebAPI\TNCAnimalLabelWebAPI\bin\TNCAnimalLabelWebAPI.dll
+2>------ Publish started: Project: TNCAnimalLabelWebAPI, Configuration: Debug x64 ------
+2>Transformed Web.config using C:\tncchina\AnimalLabel\AzureWebAPI\TNCAnimalLabelWebAPI\Web.Debug.config into obj\x64\Debug\TransformWebConfig\transformed\Web.config.
+2>Auto ConnectionString Transformed obj\x64\Debug\TransformWebConfig\transformed\Web.config into obj\x64\Debug\CSAutoParameterize\transformed\Web.config.
+2>Copying all files to temporary location below for package/publish:
+2>obj\x64\Debug\Package\PackageTmp.
+2>Start Web Deploy Publish the Application/package to https://tncanimallabelwebapi.scm.azurewebsites.net/msdeploy.axd?site=TNCAnimalLabelWebAPI ...
+2>Adding directory (TNCAnimalLabelWebAPI\CNTK).
+2>Adding directory (TNCAnimalLabelWebAPI\CNTK\Models).
+2>Adding ACLs for path (TNCAnimalLabelWebAPI)
+2>Adding ACLs for path (TNCAnimalLabelWebAPI)
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Composite-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Core-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Core.CSBinding-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.Binary-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.HTK-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.Image-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.TextFormat-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Math-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.PerformanceProfiler-2.5.1.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\libiomp5md.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.IdentityModel.JsonWebTokens.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.IdentityModel.JsonWebTokens.pdb).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.IdentityModel.Logging.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.IdentityModel.Logging.pdb).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.IdentityModel.Tokens.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.IdentityModel.Tokens.pdb).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.Web.Infrastructure.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\mkldnn.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\mklml.dll).
+2>Updating file (TNCAnimalLabelWebAPI\bin\Newtonsoft.Json.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\opencv_world310.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\Swashbuckle.Core.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\System.IdentityModel.Tokens.Jwt.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\System.IdentityModel.Tokens.Jwt.pdb).
+2>Updating file (TNCAnimalLabelWebAPI\bin\System.Net.Http.Formatting.dll).
+2>Updating file (TNCAnimalLabelWebAPI\bin\System.Web.Http.dll).
+2>Updating file (TNCAnimalLabelWebAPI\bin\System.Web.Http.WebHost.dll).
+2>Updating file (TNCAnimalLabelWebAPI\bin\TNCAnimalLabelWebAPI.dll).
+2>Updating file (TNCAnimalLabelWebAPI\bin\TNCAnimalLabelWebAPI.pdb).
+2>Adding file (TNCAnimalLabelWebAPI\bin\WebActivatorEx.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\zip.dll).
+2>Adding file (TNCAnimalLabelWebAPI\bin\zlib.dll).
+2>Adding file (TNCAnimalLabelWebAPI\CNTK\Models\ResNet20_CIFAR10_CNTK.model).
+2>Adding file (TNCAnimalLabelWebAPI\CNTK\Models\TNC_ResNet18_ImageNet_CNTK.model).
+2>Updating file (TNCAnimalLabelWebAPI\Global.asax).
+2>Adding file (TNCAnimalLabelWebAPI\packages.config).
+2>Updating file (TNCAnimalLabelWebAPI\Web.config).
+2>Adding ACLs for path (TNCAnimalLabelWebAPI)
+2>Adding ACLs for path (TNCAnimalLabelWebAPI)
+2>Publish Succeeded.
+2>Web App was published successfully http://tncanimallabelwebapi.azurewebsites.net/
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+========== Publish: 1 succeeded, 0 failed, 0 skipped ==========
