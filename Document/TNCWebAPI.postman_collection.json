@@ -1,0 +1,96 @@
+{
+	"info": {
+		"_postman_id": "19af04c8-af26-4d38-a367-8d7785f9a8c8",
+		"name": "TNCWebAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "TNCWebAPI_Get_Request_Local",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\"this is the URL of the image\""
+				},
+				"url": {
+					"raw": "http://localhost:51185/api/Prediction",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "51185",
+					"path": [
+						"api",
+						"Prediction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TNCWebAPI_Post_Request_Local",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\"https://qqq.blob.core.windows.net/mycontainer/IMAG0005.JPG\""
+				},
+				"url": {
+					"raw": "http://localhost:51185/api/Prediction",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "51185",
+					"path": [
+						"api",
+						"Prediction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TNCWebAPI_Post_Request_Azure",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\"https://qqq.blob.core.windows.net/mycontainer/IMAG0005.JPG\""
+				},
+				"url": {
+					"raw": "http://localhost:51185/api/Prediction",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "51185",
+					"path": [
+						"api",
+						"Prediction"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
