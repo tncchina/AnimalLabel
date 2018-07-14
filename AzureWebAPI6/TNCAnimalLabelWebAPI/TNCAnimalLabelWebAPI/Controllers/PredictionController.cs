@@ -61,10 +61,8 @@ namespace TNCAnimalLabelWebAPI.Controllers
             string domainBaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string workingDirectory = Environment.CurrentDirectory;
             DeviceDescriptor device = DeviceDescriptor.CPUDevice;
-            string[] class_labels = new string[] { "空", "家牛", "人", "松鼠", "鼠", "猕猴", "血雉", "鸟类", "滇金丝猴", "麂属",
-                "家狗", "兽类", "黄喉貂", "山羊", "白腹锦鸡", "豹猫", "赤麂", "红腹角雉", "黑颈长尾雉", "黄鼬", "亚洲黑熊", "绵羊",
-                "野兔", "家羊", "鼯鼠", "鬣羚", "白顶溪鸲", "黄嘴山鸦", "家马", "黑顶噪鹛", "隐纹花鼠", "花面狸", "黑熊", "豪猪",
-                "啄木鸟", "小麂", "鼯鼠属", "白点噪鹛", "长尾地鸫", "眼纹噪鹛", "灰头小鼯鼠", "勺鸡" };
+            string[] class_labels = new string[] { "空","牛","松鼠","人","雉鸡","猕猴","鼠","麂","滇金丝猴","鸟","狗",
+                                                   "山羊","黄喉貂","豹猫","绵羊","黄鼬","黑熊","野兔","鬣羚","马","豪猪","其他"};
 
             // Load the model.
             // This example requires the ResNet20_CIFAR10_CNTK.model.
