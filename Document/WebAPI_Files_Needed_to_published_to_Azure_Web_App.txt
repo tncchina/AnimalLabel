@@ -1,0 +1,175 @@
+1>------ Publish started: Project: TNCAnimalLabelWebAPI, Configuration: Debug x64 ------
+1>Transformed Web.config using C:\tncchina\AnimalLabel\AzureWebAPI6\TNCAnimalLabelWebAPI\TNCAnimalLabelWebAPI\Web.Debug.config into obj\x64\Debug\TransformWebConfig\transformed\Web.config.
+1>Auto ConnectionString Transformed Areas\HelpPage\Views\Web.config into obj\x64\Debug\CSAutoParameterize\transformed\Areas\HelpPage\Views\Web.config.
+1>Auto ConnectionString Transformed Views\Web.config into obj\x64\Debug\CSAutoParameterize\transformed\Views\Web.config.
+1>Auto ConnectionString Transformed obj\x64\Debug\TransformWebConfig\transformed\Web.config into obj\x64\Debug\CSAutoParameterize\transformed\Web.config.
+1>Copying all files to temporary location below for package/publish:
+1>obj\x64\Debug\Package\PackageTmp.
+1>Start Web Deploy Publish the Application/package to https://tncanimallabelwebapi.scm.azurewebsites.net/msdeploy.axd?site=TNCAnimalLabelWebAPI ...
+1>Adding directory (TNCAnimalLabelWebAPI\Areas).
+1>Adding directory (TNCAnimalLabelWebAPI\Areas\HelpPage).
+1>Adding directory (TNCAnimalLabelWebAPI\Areas\HelpPage\Views).
+1>Adding directory (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help).
+1>Adding directory (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates).
+1>Adding directory (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Shared).
+1>Adding directory (TNCAnimalLabelWebAPI\bin).
+1>Adding directory (TNCAnimalLabelWebAPI\bin\roslyn).
+1>Adding directory (TNCAnimalLabelWebAPI\Content).
+1>Adding directory (TNCAnimalLabelWebAPI\fonts).
+1>Adding directory (TNCAnimalLabelWebAPI\Scripts).
+1>Adding directory (TNCAnimalLabelWebAPI\Views).
+1>Adding directory (TNCAnimalLabelWebAPI\Views\Home).
+1>Adding directory (TNCAnimalLabelWebAPI\Views\Shared).
+1>Adding ACLs for path (TNCAnimalLabelWebAPI)
+1>Adding ACLs for path (TNCAnimalLabelWebAPI)
+1>Adding file (TNCAnimalLabelWebAPI\ApplicationInsights.config).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\HelpPage.css).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\Api.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\ComplexTypeModelDescription.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\DictionaryModelDescription.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\EnumTypeModelDescription.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\HelpPageApiModel.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\ImageSample.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\InvalidSample.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\KeyValuePairModelDescription.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\ModelDescriptionLink.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\Parameters.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\Samples.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\SimpleTypeModelDescription.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\DisplayTemplates\TextSample.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\Index.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Help\ResourceModel.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Shared\_Layout.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\Web.config).
+1>Adding file (TNCAnimalLabelWebAPI\Areas\HelpPage\Views\_ViewStart.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Antlr3.Runtime.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Antlr3.Runtime.pdb).
+1>Adding file (TNCAnimalLabelWebAPI\bin\ApplicationInsights.config).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Composite-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Core-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Core.CSBinding-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Core.Managed-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.Binary-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.HTK-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.Image-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Deserializers.TextFormat-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.Math-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Cntk.PerformanceProfiler-2.5.1.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\libiomp5md.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AI.Agent.Intercept.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AI.DependencyCollector.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AI.PerfCounterCollector.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AI.ServerTelemetryChannel.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AI.Web.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AI.WindowsServer.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.ApplicationInsights.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.AspNet.TelemetryCorrelation.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Microsoft.Web.Infrastructure.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\mkldnn.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\mklml.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\Newtonsoft.Json.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\opencv_world310.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\csc.exe).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\csc.exe.config).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\csc.rsp).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\csi.exe).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\csi.exe.config).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\csi.rsp).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.CodeAnalysis.CSharp.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.CodeAnalysis.CSharp.Scripting.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.CodeAnalysis.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.CodeAnalysis.Scripting.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.CSharp.Core.targets).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.DiaSymReader.Native.amd64.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.DiaSymReader.Native.x86.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.VisualBasic.Core.targets).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\Microsoft.Win32.Primitives.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.AppContext.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Collections.Immutable.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Console.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Diagnostics.FileVersionInfo.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Diagnostics.Process.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Diagnostics.StackTrace.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.IO.Compression.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.IO.FileSystem.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.IO.FileSystem.DriveInfo.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.IO.FileSystem.Primitives.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.IO.Pipes.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Reflection.Metadata.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.AccessControl.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.Claims.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.Cryptography.Algorithms.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.Cryptography.Encoding.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.Cryptography.Primitives.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.Cryptography.X509Certificates.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Security.Principal.Windows.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Text.Encoding.CodePages.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Threading.Thread.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.ValueTuple.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Xml.ReaderWriter.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Xml.XmlDocument.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Xml.XPath.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\System.Xml.XPath.XDocument.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\vbc.exe).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\vbc.exe.config).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\vbc.rsp).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\VBCSCompiler.exe).
+1>Adding file (TNCAnimalLabelWebAPI\bin\roslyn\VBCSCompiler.exe.config).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Diagnostics.DiagnosticSource.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Net.Http.Formatting.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.Helpers.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.Http.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.Http.WebHost.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.Mvc.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.Optimization.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.Razor.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.WebPages.Deployment.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.WebPages.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\System.Web.WebPages.Razor.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\TNCAnimalLabelWebAPI.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\TNCAnimalLabelWebAPI.pdb).
+1>Adding file (TNCAnimalLabelWebAPI\bin\WebGrease.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\zip.dll).
+1>Adding file (TNCAnimalLabelWebAPI\bin\zlib.dll).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap-theme.css).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap-theme.css.map).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap-theme.min.css).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap-theme.min.css.map).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap.css).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap.css.map).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap.min.css).
+1>Adding file (TNCAnimalLabelWebAPI\Content\bootstrap.min.css.map).
+1>Adding file (TNCAnimalLabelWebAPI\Content\Site.css).
+1>Adding file (TNCAnimalLabelWebAPI\favicon.ico).
+1>Adding file (TNCAnimalLabelWebAPI\fonts\glyphicons-halflings-regular.eot).
+1>Adding file (TNCAnimalLabelWebAPI\fonts\glyphicons-halflings-regular.svg).
+1>Adding file (TNCAnimalLabelWebAPI\fonts\glyphicons-halflings-regular.ttf).
+1>Adding file (TNCAnimalLabelWebAPI\fonts\glyphicons-halflings-regular.woff).
+1>Adding file (TNCAnimalLabelWebAPI\fonts\glyphicons-halflings-regular.woff2).
+1>Adding file (TNCAnimalLabelWebAPI\Global.asax).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\bootstrap.js).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\bootstrap.min.js).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\jquery-3.3.1.js).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\jquery-3.3.1.min.js).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\jquery-3.3.1.min.map).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\jquery-3.3.1.slim.js).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\jquery-3.3.1.slim.min.js).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\jquery-3.3.1.slim.min.map).
+1>Adding file (TNCAnimalLabelWebAPI\Scripts\modernizr-2.8.3.js).
+1>Adding file (TNCAnimalLabelWebAPI\Views\Home\Index.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Views\Shared\Error.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Views\Shared\_Layout.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Views\Web.config).
+1>Adding file (TNCAnimalLabelWebAPI\Views\_ViewStart.cshtml).
+1>Adding file (TNCAnimalLabelWebAPI\Web.config).
+1>Adding ACLs for path (TNCAnimalLabelWebAPI)
+1>Adding ACLs for path (TNCAnimalLabelWebAPI)
+1>Publish Succeeded.
+1>Web App was published successfully http://tncanimallabelwebapi.azurewebsites.net/
+========== Build: 0 succeeded, 0 failed, 1 up-to-date, 0 skipped ==========
+========== Publish: 1 succeeded, 0 failed, 0 skipped ==========
