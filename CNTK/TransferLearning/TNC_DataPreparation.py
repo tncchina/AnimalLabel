@@ -66,6 +66,7 @@ class TNCDataSet:
         self.cleanup_df = pd.DataFrame()
         self.train_df = pd.DataFrame()
         self.test_df = pd.DataFrame()
+        self.vali_df = pd.DataFrame()
 
         self.base_folder = os.path.dirname(os.path.abspath(__file__))
         self.datasets_dir = os.path.join(self.base_folder, "DataSets")
@@ -91,6 +92,7 @@ class TNCDataSet:
 
         self.training_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_training_split.txt")
         self.test_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_test_split.txt")
+        self.vali_split_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_vali_split.txt")
 
         self.training_data_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_train.txt")
         self.test_data_filename = os.path.join(self.output_dir, OUTPUT_FILE_NAME_BASE + "_test.txt")
@@ -133,7 +135,7 @@ class TNCDataSet:
             print("Image folder exist. skip extacting images to ", self.img_dir)
         else:
             print("Unpacking image files: ", self.img_pack_fullname)
-            print("Please waite...")
+            print("Please wait...")
             zf.extractall(self.img_dir)
         print("Done!")
         return True
@@ -310,19 +312,25 @@ class TNCDataSet:
             df = self.cleanup_df[self.cleanup_df['ClassID'] == classid]
 
             row = df.shape[0]
-            split_index = math.floor(row * TRAINING_TEST_RATIO)
-
+            split_index = math.floor(row * TRAINING_TEST_RATIO) 
+            test_num = math.floor(row * (1 - TRAINING_TEST_RATIO)/2)
+            # need train, test shuffle and random sample - for selection from random cameras
+            df = df.sample(frac=1, random_state=123).reset_index(drop=True)
+            # add validation set
             if row == 1:
                 self.train_df = self.train_df.append(df.iloc[0], ignore_index=True)
                 self.test_df = self.test_df.append(df.iloc[0], ignore_index=True)
+                self.vali_df = self.vali_df.append(df.iloc[0], ignore_index=True)
             elif row == 2:
                 self.train_df = self.train_df.append(df.iloc[0], ignore_index=True)
                 self.test_df = self.test_df.append(df.iloc[1], ignore_index=True)
+                self.vali_df = self.vali_df.append(df.iloc[1], ignore_index=True)
             elif row >= 3:
                 if split_index == row:
                     split_index = row - 1
                 self.train_df = pd.concat([self.train_df, df.iloc[:split_index]], ignore_index=True)
-                self.test_df = pd.concat([self.test_df, df.iloc[split_index:]], ignore_index=True)
+                self.test_df = pd.concat([self.test_df, df.iloc[split_index: split_index+test_num]], ignore_index=True)
+                self.vali_df = pd.concat([self.vali_df, df.iloc[split_index+test_num:]], ignore_index=True)
             print("Total rows: ", row)
             print("Training  : ", split_index)
             print("Test      : ", row - split_index)
@@ -336,9 +344,11 @@ class TNCDataSet:
 
         print("Total training rows: ", self.train_df.shape[0])
         print("Total Test rows: ", self.test_df.shape[0])
+        print("Total Validation rows: ", self.vali_df.shape[0])
 
         self.train_df.to_csv(self.training_split_filename, index=False, encoding='utf-8-sig')
         self.test_df.to_csv(self.test_split_filename, index=False, encoding='utf-8-sig')
+        self.vali_df.to_csv(self.vali_split_filename, index=False, encoding='utf-8-sig')
         print("Done.")
         return
 
@@ -458,6 +468,15 @@ class TNCDataSet:
             df_test = df_test.append({'FileName': f, 'ID': self.test_df.iloc[i]['ClassID']}, ignore_index=True)
         df_test.to_csv(self.test_split_filename, header=False, sep='\t', index=False)
         print("Test data is saved to ", self.test_split_filename)
+
+        df_vali = pd.DataFrame(columns=['FileName', 'ID'])
+        for i in range(self.vali_df.shape[0]):
+            folder = self.vali_df.iloc[i]['Folder']
+            filename = self.vali_df.iloc[i]['FileName']
+            f = os.path.join(self.img_dir,folder,filename+".JPG")
+            df_vali = df_vali.append({'FileName':f, 'ID':self.vali_df.iloc[i]['ClassID']}, ignore_index=True)
+        df_test.to_csv(self.vali_split_filename, header=False, sep='\t', index=False)
+        print("Validation data is saved to ", self.vali_split_filename)       
         print("Done.")
         return
 
@@ -504,6 +523,8 @@ class TNCDataSet:
             else:
                 summary.write("Testing set file:\t{!s}\n".format(self.test_data_filename))
 
+            summary.write("Validation set file:\t%s\n" % self.vali_split_filename)
+
             summary.write("\n\n")
             summary.write("=== Raw Data =====\n")
 
@@ -517,7 +538,6 @@ class TNCDataSet:
             summary.write("\n\n")
             summary.write("==== Training Set ====\n")
             summary.write("CID\tRows\n")
-
             for classid in list(self.class_list):
                 row = self.train_df[self.train_df['ClassID'] == classid].shape[0]
                 summary.write("%d\t%d\n" % (classid, row))
@@ -532,6 +552,15 @@ class TNCDataSet:
                 summary.write("%d\t%d\n" % (classid, row))
             summary.write("------------------\n")
             summary.write("Total:\t%d\n" % self.test_df.shape[0])
+
+            summary.write("\n\n")
+            summary.write("==== Validation Set ====\n")
+            summary.write("CID\tRows\n")
+            for classid in  list(self.class_list):
+                row = self.vali_df[self.vali_df['ClassID'] == classid].shape[0]
+                summary.write("%d\t%d\n" % (classid, row))
+            summary.write("------------------\n")
+            summary.write("Total:\t%d\n" % self.vali_df.shape[0])
 
             summary.flush()
             summary.close()
