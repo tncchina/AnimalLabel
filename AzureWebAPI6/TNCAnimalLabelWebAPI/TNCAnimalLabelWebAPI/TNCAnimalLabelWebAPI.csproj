@@ -50,6 +50,7 @@
       <HintPath>..\packages\CNTK.CPUOnly.2.5.1\lib\net45\x64\Cntk.Core.Managed-2.5.1.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -188,6 +189,8 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="CNTKImageProcessing.cs" />
+    <Compile Include="CNTK\CNTKModel.cs" />
+    <Compile Include="CNTK\ModelClassLabelID.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\PredictionController.cs" />
     <Compile Include="Global.asax.cs">
@@ -232,6 +235,9 @@
     </Content>
     <Content Include="CNTK\Models\ResNet20_CIFAR10_CNTK.model" />
     <Content Include="CNTK\Models\TNC_ResNet18_ImageNet_CNTK.model" />
+    <Content Include="CNTK\Models\TNC_ResNet18_ImageNet_CNTK.csv" />
+    <Content Include="CNTK\Models\TNC_ResNet18_ImageNet_CNTK-100.csv" />
+    <Content Include="CNTK\Models\TNC_ResNet18_ImageNet_CNTK-100.model" />
     <None Include="Properties\PublishProfiles\TNCAnimalLabelWebAPI - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
