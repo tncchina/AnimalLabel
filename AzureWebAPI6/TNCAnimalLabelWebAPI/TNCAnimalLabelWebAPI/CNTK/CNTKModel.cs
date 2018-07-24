@@ -1,17 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
-using System.Net;
 using System.Net.Http;
-using System.Web.Http;
 using System.Drawing;
-
-using TNCAnimalLabelWebAPI.CNTK;
 using TNCAnimalLabelWebAPI.Models;
 using CNTK;
 using CNTKImageProcessing;
@@ -22,21 +17,22 @@ namespace TNCAnimalLabelWebAPI.CNTK
     public class CNTKModel
     {
         private List<ModelClassLabelID> ClassLabelIDs { get; set; }
+        private ConcurrentBag<Function> modelPool = new ConcurrentBag<Function>();
+        private readonly Function _basemodel;
+        private readonly int _max_allowed_stored_models;
+        private readonly string _model_name;
+        private readonly HttpClient _httpClient;
 
-        public async Task<ImagePredictionResultModel> EvaluateCustomDNN(string iterationID, string application, string modelName, string imageUrl)
-        //public ImagePredictionResultModel EvaluateCustomDNN(string imageUrl)
+        public CNTKModel(string modelName)
         {
             // if no modelName is provided, fall-back to default 
-            if (modelName == "")
-            {
-                modelName = "TNC_ResNet18_ImageNet_CNTK";
-            }
+            _model_name = string.IsNullOrWhiteSpace(modelName) ? "TNC_ResNet18_ImageNet_CNTK" : modelName;
 
             string domainBaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string workingDirectory = Environment.CurrentDirectory;
 
             // load class labels and IDs.
-            string classLableMapFilePath = Path.Combine(domainBaseDirectory, @"CNTK\Models\" + modelName + ".csv");
+            string classLableMapFilePath = Path.Combine(domainBaseDirectory, @"CNTK\Models\" + _model_name + ".csv");
             this.ClassLabelIDs = this.LoadClassLabelAndIDsFromCSV(classLableMapFilePath);
 
             DeviceDescriptor device = DeviceDescriptor.CPUDevice;
@@ -46,13 +42,47 @@ namespace TNCAnimalLabelWebAPI.CNTK
             // The model can be downloaded from <see cref="https://www.cntk.ai/Models/CNTK_Pretrained/ResNet20_CIFAR10_CNTK.model"/>
             // Please see README.md in <CNTK>/Examples/Image/Classification/ResNet about how to train the model.
             // string modelFilePath = Path.Combine(domainBaseDirectory, @"CNTK\Models\ResNet20_CIFAR10_CNTK.model");
-            string modelFilePath = Path.Combine(domainBaseDirectory, @"CNTK\Models\" + modelName + ".model");
+            string modelFilePath = Path.Combine(domainBaseDirectory, @"CNTK\Models\" + _model_name + ".model");
             if (!File.Exists(modelFilePath))
             {
                 throw new FileNotFoundException(modelFilePath, string.Format("Error: The model '{0}' does not exist. Please follow instructions in README.md in <CNTK>/Examples/Image/Classification/ResNet to create the model.", modelFilePath));
             }
 
-            Function modelFunc = Function.Load(modelFilePath, device);
+            _httpClient = new HttpClient();
+            _basemodel = Function.Load(modelFilePath, device);
+            modelPool.Add(_basemodel.Clone());
+        }
+
+        private async Task<Bitmap> GetImageFromUrl(string imageUrl)
+        {
+            // Retrieve the image file.
+            //Bitmap bmp = new Bitmap(Bitmap.FromFile(imageUrl));
+            var imageStream = await _httpClient.GetStreamAsync(imageUrl);
+            var bmp = new Bitmap(Image.FromStream(imageStream));
+            return bmp;
+        }
+
+        private Function GetModelFromBag()
+        {
+            modelPool.TryTake(out var tfun);
+            return tfun ?? _basemodel.Clone();
+        }
+
+        private bool ReturnModelToBag(Function cntkFunction)
+        {
+            if (modelPool.Count >= _max_allowed_stored_models) return false;
+            modelPool.Add(cntkFunction);
+            return true;
+        }
+        
+        public async Task<ImagePredictionResultModel> EvaluateCustomDNN(string modelName, string iterationID, string application, string imageUrl)
+        //public ImagePredictionResultModel EvaluateCustomDNN(string imageUrl)
+        {
+
+
+            Function modelFunc = GetModelFromBag();
+
+            DeviceDescriptor device = DeviceDescriptor.CPUDevice;
 
             // Get input variable. The model has only one single input.
             Variable inputVar = modelFunc.Arguments.Single();
@@ -72,9 +102,7 @@ namespace TNCAnimalLabelWebAPI.CNTK
 
             // Retrieve the image file.
             //Bitmap bmp = new Bitmap(Bitmap.FromFile(imageUrl));
-            System.Net.Http.HttpClient httpClient = new HttpClient();
-            Stream imageStream = await httpClient.GetStreamAsync(imageUrl);
-            Bitmap bmp = new Bitmap(Bitmap.FromStream(imageStream));
+            Bitmap bmp = await GetImageFromUrl(imageUrl);
 
             var resized = bmp.Resize(imageWidth, imageHeight, true);
             List<float> resizedCHW = resized.ParallelExtractCHW();
@@ -89,6 +117,8 @@ namespace TNCAnimalLabelWebAPI.CNTK
             // Start evaluation on the device
             modelFunc.Evaluate(inputDataMap, outputDataMap, device);
 
+            ReturnModelToBag(modelFunc);
+
             // Get evaluate result as dense output
             var outputVal = outputDataMap[outputVar];
             var outputData = outputVal.GetDenseData<float>(outputVar);
@@ -96,25 +126,29 @@ namespace TNCAnimalLabelWebAPI.CNTK
 
             if (softmax_vals.Length != this.ClassLabelIDs.Count)
             {
-                throw new Exception(modelName + " class label mapping file and CNTK model file have different number of classes.");
+                throw new Exception(_model_name + " class label mapping file and CNTK model file have different number of classes.");
             }
 
 
             // construct a ImagePredictionResultModel.    "class name": prediction of the class.
-            ImagePredictionResultModel predictionResult = new ImagePredictionResultModel();
-            predictionResult.Id = "TNC100";
-            predictionResult.Project = "TNCAnimalLabel";
-            predictionResult.Iteration = iterationID;
-            predictionResult.Created = DateTime.Now;
-            predictionResult.Predictions = new List<Prediction>();
+            ImagePredictionResultModel predictionResult = new ImagePredictionResultModel
+            {
+                Id = "TNC100",
+                Project = "TNCAnimalLabel",
+                Iteration = iterationID,
+                Created = DateTime.Now,
+                Predictions = new List<Prediction>()
+            };
 
             int i = 0;
             for (; i < (softmax_vals.Length); i++)
             {
-                Prediction prediction = new Prediction();
-                prediction.TagId = this.ClassLabelIDs[i].ID;
-                prediction.Tag = this.ClassLabelIDs[i].Label;
-                prediction.Probability = softmax_vals[i];
+                var prediction = new Prediction
+                {
+                    TagId = this.ClassLabelIDs[i].ID,
+                    Tag = this.ClassLabelIDs[i].Label,
+                    Probability = softmax_vals[i]
+                };
                 predictionResult.Predictions.Add(prediction);
             }
 
