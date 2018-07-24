@@ -7,6 +7,7 @@ using System.Web.Http;
 using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
+using System.Security.Policy;
 using System.Text;
 
 using TNCAnimalLabelWebAPI.CNTK;
@@ -19,6 +20,8 @@ namespace TNCAnimalLabelWebAPI.Controllers
 {
     public class PredictionController : ApiController
     {
+        public static CNTKModel CNTK_Model = new CNTKModel("");
+
         // GET: api/Prediction
         public IEnumerable<string> Get()
         {
@@ -52,8 +55,7 @@ namespace TNCAnimalLabelWebAPI.Controllers
 
             try
             {
-                CNTKModel CNTK_Model = new CNTKModel();
-                ImagePredictionResultModel predictionResult = await CNTK_Model.EvaluateCustomDNN("", "", prediction_key, Url);
+                var predictionResult = await CNTK_Model.EvaluateCustomDNN("", "", prediction_key, Url);
                 return Ok(predictionResult);
             }
             catch (Exception ex)
@@ -81,7 +83,6 @@ namespace TNCAnimalLabelWebAPI.Controllers
 
             try
             {
-                CNTKModel CNTK_Model = new CNTKModel();
                 ImagePredictionResultModel predictionResult = await CNTK_Model.EvaluateCustomDNN(iterationId, application, prediction_key, Url);
                 return Ok(predictionResult);
             }
