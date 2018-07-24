@@ -1,19 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using System.Threading.Tasks;
-using System.IO;
-using System.Drawing;
-using System.Security.Policy;
-using System.Text;
-
 using TNCAnimalLabelWebAPI.CNTK;
 using TNCAnimalLabelWebAPI.Models;
-using CNTK;
-using CNTKImageProcessing;
 
 
 namespace TNCAnimalLabelWebAPI.Controllers

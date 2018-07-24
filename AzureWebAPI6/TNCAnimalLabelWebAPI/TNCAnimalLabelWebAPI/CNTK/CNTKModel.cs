@@ -2,17 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
-using System.Net;
 using System.Net.Http;
-using System.Web.Http;
 using System.Drawing;
-
-using TNCAnimalLabelWebAPI.CNTK;
 using TNCAnimalLabelWebAPI.Models;
 using CNTK;
 using CNTKImageProcessing;
@@ -27,6 +21,7 @@ namespace TNCAnimalLabelWebAPI.CNTK
         private readonly Function _basemodel;
         private readonly int _max_allowed_stored_models;
         private readonly string _model_name;
+        private readonly HttpClient _httpClient;
 
         public CNTKModel(string modelName)
         {
@@ -53,6 +48,7 @@ namespace TNCAnimalLabelWebAPI.CNTK
                 throw new FileNotFoundException(modelFilePath, string.Format("Error: The model '{0}' does not exist. Please follow instructions in README.md in <CNTK>/Examples/Image/Classification/ResNet to create the model.", modelFilePath));
             }
 
+            _httpClient = new HttpClient();
             _basemodel = Function.Load(modelFilePath, device);
             modelPool.Add(_basemodel.Clone());
         }
@@ -61,9 +57,8 @@ namespace TNCAnimalLabelWebAPI.CNTK
         {
             // Retrieve the image file.
             //Bitmap bmp = new Bitmap(Bitmap.FromFile(imageUrl));
-            var httpClient = new HttpClient();
-            var imageStream = await httpClient.GetStreamAsync(imageUrl);
-            var bmp = new Bitmap(Bitmap.FromStream(imageStream));
+            var imageStream = await _httpClient.GetStreamAsync(imageUrl);
+            var bmp = new Bitmap(Image.FromStream(imageStream));
             return bmp;
         }
 
@@ -136,20 +131,24 @@ namespace TNCAnimalLabelWebAPI.CNTK
 
 
             // construct a ImagePredictionResultModel.    "class name": prediction of the class.
-            ImagePredictionResultModel predictionResult = new ImagePredictionResultModel();
-            predictionResult.Id = "TNC100";
-            predictionResult.Project = "TNCAnimalLabel";
-            predictionResult.Iteration = iterationID;
-            predictionResult.Created = DateTime.Now;
-            predictionResult.Predictions = new List<Prediction>();
+            ImagePredictionResultModel predictionResult = new ImagePredictionResultModel
+            {
+                Id = "TNC100",
+                Project = "TNCAnimalLabel",
+                Iteration = iterationID,
+                Created = DateTime.Now,
+                Predictions = new List<Prediction>()
+            };
 
             int i = 0;
             for (; i < (softmax_vals.Length); i++)
             {
-                Prediction prediction = new Prediction();
-                prediction.TagId = this.ClassLabelIDs[i].ID;
-                prediction.Tag = this.ClassLabelIDs[i].Label;
-                prediction.Probability = softmax_vals[i];
+                var prediction = new Prediction
+                {
+                    TagId = this.ClassLabelIDs[i].ID,
+                    Tag = this.ClassLabelIDs[i].Label,
+                    Probability = softmax_vals[i]
+                };
                 predictionResult.Predictions.Add(prediction);
             }
 
