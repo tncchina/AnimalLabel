@@ -7,6 +7,8 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 
+using TNCAnimalLabelWebAPI.CNTK;
+
 namespace TNCAnimalLabelWebAPI
 {
     public class WebApiApplication : System.Web.HttpApplication
@@ -24,6 +26,9 @@ namespace TNCAnimalLabelWebAPI
             string cntkPath = domainBaseDir + @"bin\";
             pathValue += ";" + cntkPath;
             Environment.SetEnvironmentVariable("PATH", pathValue);
+
+            // preload the CNTK models, and keep them in the ApplicationState.
+            CNTKHelper.LoadCNTKModels();
         }
     }
 }

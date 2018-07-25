@@ -190,6 +190,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="CNTKImageProcessing.cs" />
+    <Compile Include="CNTK\CNTKHelper.cs" />
     <Compile Include="CNTK\CNTKModel.cs" />
     <Compile Include="CNTK\ModelClassLabelID.cs" />
     <Compile Include="Controllers\HomeController.cs" />
