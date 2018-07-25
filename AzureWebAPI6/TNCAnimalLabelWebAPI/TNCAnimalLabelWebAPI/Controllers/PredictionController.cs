@@ -52,8 +52,8 @@ namespace TNCAnimalLabelWebAPI.Controllers
 
             try
             {
-                CNTKModel CNTK_Model = new CNTKModel();
-                ImagePredictionResultModel predictionResult = await CNTK_Model.EvaluateCustomDNN("", "", prediction_key, Url);
+                CNTKHelper cntk_Helper = new CNTKHelper();
+                ImagePredictionResultModel predictionResult = await cntk_Helper.EvaluateCustomDNN("", "", prediction_key, Url);
                 return Ok(predictionResult);
             }
             catch (Exception ex)
@@ -81,8 +81,8 @@ namespace TNCAnimalLabelWebAPI.Controllers
 
             try
             {
-                CNTKModel CNTK_Model = new CNTKModel();
-                ImagePredictionResultModel predictionResult = await CNTK_Model.EvaluateCustomDNN(iterationId, application, prediction_key, Url);
+                CNTKHelper cntk_Helper = new CNTKHelper();
+                ImagePredictionResultModel predictionResult = await cntk_Helper.EvaluateCustomDNN(iterationId, application, prediction_key, Url);
                 return Ok(predictionResult);
             }
             catch (Exception ex)
