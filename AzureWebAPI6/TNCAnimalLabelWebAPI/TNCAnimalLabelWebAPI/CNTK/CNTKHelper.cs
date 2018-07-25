@@ -155,7 +155,12 @@ namespace TNCAnimalLabelWebAPI.CNTK
             Stream imageStream = await httpClient.GetStreamAsync(imageUrl);
             Bitmap bmp = new Bitmap(Bitmap.FromStream(imageStream));
 
-            var resized = bmp.Resize(imageWidth, imageHeight, true);
+            var resized = bmp;
+            if (bmp.Width != imageWidth || bmp.Height != imageHeight)
+            {
+                resized = bmp.Resize(imageWidth, imageHeight, true);
+            }
+
             List<float> resizedCHW = resized.ParallelExtractCHW();
 
             // Create input data map
